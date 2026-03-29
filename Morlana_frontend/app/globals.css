@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* Couleurs principales centralisées */
+  --color-primary: #2563eb;
+  --color-secondary: #f59e42;
+  --color-accent: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #fbbf24;
+  --color-success: #22c55e;
+  --color-muted: #6b7280;
+
+  /* Couleurs supplémentaires depuis page.tsx */
+  --color-bg-card: #2d323b;
+  --color-bg-section: #23272f;
+  --color-border: #444851;
+  --color-bg-input: #353a43;
+  --color-orange: #ff6b35;
+  --color-orange-hover: #ff9566;
+  --color-blue: #3498db;
+  --color-light: #e0e2e6;
+  --color-lightest: #f4f4f4;
+  --color-green: #00b894;
+  --color-yellow: #fdcb6e;
+  --color-gray: #bcbfc4;
+
+  /* Polices */
+  --font-sans: 'Geist Sans', Arial, Helvetica, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+
+  /* Espacements, radius, etc. */
+  --radius: 0.5rem;
+  --padding: 1rem;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Ajout des couleurs utilisées dans la navbar de la landing page */
+  --navbar-bg: rgba(26, 26, 26, 0.95);                  /* fond navbar */
+  --navbar-border: rgba(255, 107, 53, 0.1);             /* bordure bas navbar */
+  --navbar-link: #b0b0b0;                               /* texte lien navbar */
+  --navbar-link-hover: #ff6b35;                         /* hover lien navbar */
+  --navbar-lang-bg: #3d3d3d;                            /* fond bouton langue */
+  --navbar-lang-border: #ff6b35;                        /* bordure bouton langue */
+  --navbar-lang-hover-bg: #ff6b35;                      /* fond hover bouton langue */
+  --navbar-lang-hover-text: #fff;                       /* texte hover bouton langue */
+  --navbar-logo-shadow: rgba(255, 107, 53, 0.5);        /* ombre logo */
+  --navbar-logo-hover-shadow: rgba(255, 107, 53, 0.8);  /* ombre logo hover */
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --color-primary: #60a5fa;
+    --color-secondary: #fbbf24;
+    --color-accent: #34d399;
+    --color-danger: #f87171;
+    --color-warning: #fde68a;
+    --color-success: #4ade80;
+    --color-muted: #9ca3af;
+
+    --color-bg-card: #2d323b;
+    --color-bg-section: #23272f;
+    --color-border: #444851;
+    --color-bg-input: #353a43;
+    --color-orange: #ff7849;
+    --color-orange-hover: #ff9566;
+    --color-blue: #60a5fa;
+    --color-light: #e0e2e6;
+    --color-lightest: #f4f4f4;
+    --color-green: #4ade80;
+    --color-yellow: #fde68a;
+    --color-gray: #bcbfc4;
+  }
+}
+
+/* Classes utilitaires personnalisées */
+.bg-primary { background-color: var(--color-primary) !important; }
+.text-primary { color: var(--color-primary) !important; }
+.bg-secondary { background-color: var(--color-secondary) !important; }
+.text-secondary { color: var(--color-secondary) !important; }
+.bg-accent { background-color: var(--color-accent) !important; }
+.text-accent { color: var(--color-accent) !important; }
+.bg-danger { background-color: var(--color-danger) !important; }
+.text-danger { color: var(--color-danger) !important; }
+.bg-warning { background-color: var(--color-warning) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.bg-success { background-color: var(--color-success) !important; }
+.text-success { color: var(--color-success) !important; }
+.bg-muted { background-color: var(--color-muted) !important; }
+.text-muted { color: var(--color-muted) !important; }
+
+.bg-card { background-color: var(--color-bg-card) !important; }
+.bg-section { background-color: var(--color-bg-section) !important; }
+.bg-input { background-color: var(--color-bg-input) !important; }
+.bg-orange { background-color: var(--color-orange) !important; }
+.bg-orange-hover { background-color: var(--color-orange-hover) !important; }
+.bg-blue { background-color: var(--color-blue) !important; }
+.bg-green { background-color: var(--color-green) !important; }
+.bg-yellow { background-color: var(--color-yellow) !important; }
+.bg-gray { background-color: var(--color-gray) !important; }
+
+.text-orange { color: var(--color-orange) !important; }
+.text-orange-hover { color: var(--color-orange-hover) !important; }
+.text-blue { color: var(--color-blue) !important; }
+.text-light { color: var(--color-light) !important; }
+.text-lightest { color: var(--color-lightest) !important; }
+.text-green { color: var(--color-green) !important; }
+.text-yellow { color: var(--color-yellow) !important; }
+.text-gray { color: var(--color-gray) !important; }
+.text-border { color: var(--color-border) !important; }
+
+.border-primary { border-color: var(--color-primary) !important; }
+.border-secondary { border-color: var(--color-secondary) !important; }
+.border-accent { border-color: var(--color-accent) !important; }
+.border-danger { border-color: var(--color-danger) !important; }
+.border-warning { border-color: var(--color-warning) !important; }
+.border-success { border-color: var(--color-success) !important; }
+.border-muted { border-color: var(--color-muted) !important; }
+.border-card { border-color: var(--color-bg-card) !important; }
+.border-section { border-color: var(--color-bg-section) !important; }
+.border-input { border-color: var(--color-bg-input) !important; }
+.border-orange { border-color: var(--color-orange) !important; }
+.border-blue { border-color: var(--color-blue) !important; }
+.border-green { border-color: var(--color-green) !important; }
+.border-yellow { border-color: var(--color-yellow) !important; }
+.border-gray { border-color: var(--color-gray) !important; }
+.border-border { border-color: var(--color-border) !important; }
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  transition: background var(--transition), color var(--transition);
+}
+
+.text-navbar-link { color: var(--navbar-link) !important; }
+.text-navbar-link-hover:hover { color: var(--navbar-link-hover) !important; }
+.bg-navbar { background: var(--navbar-bg) !important; }
+.border-navbar { border-color: var(--navbar-border) !important; }
+.bg-navbar-lang { background: var(--navbar-lang-bg) !important; }
+.border-navbar-lang { border-color: var(--navbar-lang-border) !important; }
+.bg-navbar-lang-hover:hover { background: var(--navbar-lang-hover-bg) !important; color: var(--navbar-lang-hover-text) !important; }

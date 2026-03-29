@@ -1,0 +1,81 @@
+fetch_reddit_posts:
+    name : fetch_reddit_posts
+    enabled: true
+    subreddits:
+      - Entrepreneur :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - SaaS :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - microsaas :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - B2BSaaS :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - passive_income :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - SideProject :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - startups :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - EntrepreneurRideAlong :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - EntrepreneurRideAlong :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - Startup_Ideas :
+          min_upvotes: 40
+          min_comments: 5
+          max_upvotes: 40
+          max_comments: 2000
+      - marketing :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - AskMarketing :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - DigitalMarketing :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+      - indiehackers :
+          min_upvotes: 40
+          min_comments: 1
+          max_upvotes: 40
+          max_comments: 2000
+        
+    post_limit: 2000
+
+search_similar_posts:
+    name : search_similar_posts
+    enabled: false
+    top_k: 5

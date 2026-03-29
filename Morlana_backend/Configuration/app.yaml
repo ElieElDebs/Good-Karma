@@ -1,0 +1,20 @@
+reddit:
+  api:
+    client_id: "reddit_client_id"
+    client_secret: "reddit_client_secret"
+    user_agent: "reddit_user_agent"
+
+database:
+  postgres:
+    host: localhost
+    port: 5432
+    user: morlana_user
+    password: secure_password
+    db_name: morlana_db
+
+  qdrant:
+    host: localhost
+    port: 6333
+    collection_name: morlana_collection
+    vector_size: 768
+    distance: Cosine

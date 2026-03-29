@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+.env
+.venv
+.git
+.gitignore
+.vscode
+node_modules
+Temp/
+Dockerfile
+readme.md
+app_manual.py

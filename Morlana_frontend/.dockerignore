@@ -1,0 +1,11 @@
+node_modules
+.next
+Dockerfile
+.dockerignore
+dist
+npm-debug.log
+yarn-error.log
+.env
+.env.*
+README.md
+.vscode
