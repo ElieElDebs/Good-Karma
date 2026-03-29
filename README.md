@@ -2,6 +2,11 @@
 	<img src="images/transparent-logo.png" alt="Good Karma logo" width="180" />
 </p>
 
+<p align="center">
+  <img src="images/Image_to_show.png" alt="Screenshot de la landing page de Good Karma" width="600" />
+</p>
+<p align="center"><i>Exemple de la landing page et des fonctionnalités principales de Good Karma</i></p>
+
 # Good Karma
 
 <p align="center">
