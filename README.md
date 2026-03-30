@@ -2,10 +2,26 @@
 	<img src="images/transparent-logo.png" alt="Good Karma logo" width="180" />
 </p>
 
+
+
 <p align="center">
-  <img src="images/Image_to_show.png" alt="Screenshot de la landing page de Good Karma" width="600" />
+	<table>
+		<tr>
+			<td align="center">
+				<img src="images/good_karma_page_1.jpeg" alt="Screenshot page 1 - Overview" width="250" /><br/>
+				<i>Application overview</i>
+			</td>
+			<td align="center">
+				<img src="images/good_karma_page_2.jpeg" alt="Screenshot page 2 - Post analysis" width="250" /><br/>
+				<i>Reddit post analysis</i>
+			</td>
+			<td align="center">
+				<img src="images/good_karma_page_3.jpeg" alt="Screenshot page 3 - Advice and KPIs" width="250" /><br/>
+				<i>Advice & KPIs</i>
+			</td>
+		</tr>
+	</table>
 </p>
-<p align="center"><i>Exemple de la landing page et des fonctionnalités principales de Good Karma</i></p>
 
 # Good Karma
 
@@ -20,6 +36,34 @@
 Good Karma is an open-source Reddit post analysis platform designed to help founders, indie makers, and growth teams improve a post before it is published. It combines a Next.js frontend, a FastAPI backend, and a Qdrant vector database to compare a draft against previously collected Reddit content and return actionable signals such as KPIs, advice, and similar posts.
 
 This repository is published for people who want to understand it, run it, improve it, and keep it alive.
+
+
+## Example Use Cases
+
+Good Karma can be leveraged in various real-world scenarios to maximize the impact of Reddit posts and community engagement. Here are some concrete examples:
+
+### For Entrepreneurs & Startups
+- **Product Launches:** Test and optimize your Reddit announcement before posting to maximize upvotes and engagement.
+- **Market Validation:** Compare your draft with successful posts in your target subreddits to refine messaging and positioning.
+- **Community Building:** Get advice on tone and structure to foster authentic discussions and avoid common pitfalls.
+
+### For Retail & E-commerce
+- **Promotional Campaigns:** Analyze promotional drafts to ensure they align with subreddit rules and community expectations.
+- **Customer Feedback:** Share product updates or feedback requests and receive suggestions to improve clarity and engagement.
+
+### For Content Creators & Marketers
+- **Content Optimization:** Benchmark your post against high-performing content to increase visibility and reach.
+- **Trend Analysis:** Discover what topics and formats resonate most in your niche.
+
+### For Researchers & Analysts
+- **Sentiment & KPI Analysis:** Use the tool to study engagement patterns and sentiment across different subreddits or topics.
+
+### Other Use Cases
+- **Nonprofits & Advocacy:** Craft compelling awareness posts and measure their likely impact before publishing.
+- **Recruitment:** Optimize job or collaboration offers for relevant communities.
+
+If you have a unique use case, feel free to contribute it to the project!
+
 
 ## Why This Project Exists
 
@@ -38,11 +82,11 @@ The goal is not to automate writing. The goal is to give better feedback before 
 
 ## Why It Is Open Source
 
-This project is being open sourced for a practical reason and for a long-term one.
+This project is being open sourced for both practical and long-term reasons.
 
-Practically, I no longer have enough time to keep evolving it alone at the pace it deserves. Rather than let it stagnate in a private repository, I want it to remain useful, inspectable, and improvable.
+Practically, we no longer have enough time to keep evolving it alone at the pace it deserves. Rather than let it stagnate in a private repository, we want it to remain useful, inspectable, and improvable.
 
-Long term, this kind of tool becomes more valuable when multiple people can maintain it, challenge its assumptions, improve the data pipeline, harden the deployment model, and adapt it to new use cases. Open sourcing Good Karma is a way to turn a constrained solo project into a shared foundation that can keep moving.
+Long term, this kind of tool becomes more valuable when multiple people can maintain it, challenge its assumptions, improve the data pipeline, harden the deployment model, and adapt it to new use cases. Open sourcing Good Karma is a way to turn a constrained duo project into a shared foundation that can keep moving.
 
 If you care about Reddit growth workflows, applied NLP, vector search, or productized developer tooling, you are exactly the kind of person this repository is now for.
 
@@ -118,195 +162,50 @@ The backend initializes Qdrant during application startup. That means Qdrant mus
 - NLP and text processing: Python tooling from the backend requirements
 - Containerization: Docker for backend, frontend, and Qdrant
 
-## Core Workflow
 
-The project currently follows this flow:
+## Lancer le projet avec Docker Compose
 
-1. Start Qdrant.
-2. Start the backend so it can initialize its Qdrant client and model.
-3. Populate the knowledge base on first use with `python app_manual.py`.
-4. Start the frontend and point it to the backend with `NEXT_PUBLIC_API_URL`.
-5. Submit Reddit drafts through the UI.
-6. Retrieve KPIs, advice, and similar posts from the backend.
-
-## Prerequisites
-
-Before running the project locally, make sure you have:
-
-- Python 3.10 or newer
-- Node.js 20 or newer
-- npm
-- Docker
-- Reddit API credentials
-
-## Configuration
-
-### Backend Environment
-
-Create a backend environment file from the example:
+Pour lancer l’ensemble du projet (backend, frontend, Qdrant) en une seule commande, utilisez Docker Compose à la racine du dépôt :
 
 ```bash
-copy Morlana_backend\Configuration\.env.example Morlana_backend\Configuration\.env
+docker-compose up --build
 ```
 
-On Unix-like systems:
+Cela va :
+- démarrer Qdrant avec un volume persistant
+- lancer le backend (FastAPI) après que Qdrant soit prêt
+- lancer le frontend (Next.js)
+
+L’URL du backend sera automatiquement passée au frontend.
+
+Pour arrêter les services :
 
 ```bash
-cp Morlana_backend/Configuration/.env.example Morlana_backend/Configuration/.env
+docker-compose down
 ```
 
-At minimum, review and fill the following values:
+Pour toute configuration avancée ou modification des variables d’environnement, référez-vous aux fichiers README présents dans :
+- `Morlana_backend/README.md` pour le backend
+- `Morlana_frontend/README.md` pour le frontend
 
-```env
-QDRANT_HOST=localhost
-QDRANT_PORT=6333
-CREATE_QDRANT_COLLECTION=
-client_id=your_reddit_client_id
-client_secret=your_reddit_client_secret
-user_agent=your_reddit_user_agent
-```
+## Lancer uniquement le backend ou le frontend
 
-Notes:
+Les instructions détaillées pour lancer séparément le backend ou le frontend (installation des dépendances, configuration, commandes de démarrage) sont disponibles dans les README respectifs :
 
-- The backend currently loads `Morlana_backend/Configuration/.env` directly.
-- Reddit credentials are required for the ingestion workflow.
-- Qdrant host and port must match the service you actually run.
-
-### Frontend Environment
-
-The frontend expects the backend base URL through `NEXT_PUBLIC_API_URL`.
-
-Create a local environment file for the frontend, for example:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000/
-```
-
-The trailing slash matters because the frontend currently builds URLs like `search?...` from that base value.
-
-## Local Development Setup
-
-### 1. Start Qdrant First
-
-This is mandatory.
-
-Run Qdrant with Docker:
-
-```bash
-docker run --name qdrant-db -p 6333:6333 -p 6334:6334 -v qdrant_storage:/qdrant/storage qdrant/qdrant
-```
-
-Qdrant will then be available on:
-
-- `http://localhost:6333` for the HTTP API
-- `localhost:6334` for gRPC
-
-### 2. Start the Backend
-
-From `Morlana_backend`:
-
-```bash
-python -m venv .venv
-```
-
-On Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-On Unix-like systems:
-
-```bash
-source .venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Start the API:
-
-```bash
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-```
-
-The backend should now be available at `http://localhost:8000`.
-
-### 3. Populate Qdrant on First Use
-
-The semantic search database is empty on first run. Populate it before expecting meaningful results.
-
-From `Morlana_backend`:
-
-```bash
-python app_manual.py
-```
-
-This script is responsible for:
-
-- initializing Qdrant if needed
-- loading the model
-- fetching Reddit posts according to the workflow configuration
-- creating embeddings and storing them in the configured collection
-
-Important:
-
-- The ingestion workflow depends on the Reddit API credentials configured in the backend settings.
-- The initial collection name and vector settings are defined in `Morlana_backend/Configuration/app.yaml`.
-- The list of targeted subreddits and thresholds is defined in `Morlana_backend/Configuration/workflow.yaml`.
-
-### 4. Start the Frontend
-
-From `Morlana_frontend`:
-
-```bash
-npm ci
-npm run dev
-```
-
-The frontend should now be available at `http://localhost:3000`.
+- [Backend – Morlana_backend/README.md](Morlana_backend/README.md)
+- [Frontend – Morlana_frontend/README.md](Morlana_frontend/README.md)
 
 ## API Surface
 
-The backend currently exposes a small API surface centered on search and subreddit support.
+Le backend expose une API centrée sur l’analyse de drafts Reddit et la gestion des subreddits :
 
-- `/` returns a basic health and version payload
-- `/search` handles Reddit draft analysis and related search behavior
-- `/subreddits` exposes subreddit-related functionality
-- `/docs` exposes the FastAPI interactive documentation
+- `/` : healthcheck et version
+- `/search` : analyse de draft Reddit
+- `/subreddits` : gestion des subreddits
+- `/docs` : documentation interactive FastAPI
 
-For a running local backend, the API docs are available at:
-
+Pour une instance locale, la documentation API est disponible sur :
 `http://localhost:8000/docs`
-
-## Docker and Deployment
-
-This repository is structured to be deployed with three containers:
-
-1. a frontend container for Next.js
-2. a backend container for FastAPI
-3. a Qdrant container for vector storage
-
-The critical operational rule is always the same: Qdrant must become available before the backend is started.
-
-For a public deployment, a repository-level Docker Compose setup is the right direction because it:
-
-- keeps service startup reproducible
-- makes local onboarding easier
-- centralizes runtime configuration
-- allows health-based startup sequencing for Qdrant and the backend
-
-At minimum, a Compose deployment should:
-
-- run Qdrant with a persistent storage volume
-- start the backend only after Qdrant is healthy
-- expose the frontend separately from the API
-- pass the correct backend URL to the frontend
-
-The backend and frontend already ship with Dockerfiles, and Qdrant can be used from its official image.
 
 ## Contributing
 
@@ -354,6 +253,13 @@ This project is licensed under the GNU Affero General Public License v3.0.
 
 If you deploy a modified version of this software as a network service, AGPL-3.0 obligations apply. Read the `LICENSE` file carefully before redistributing or hosting derived versions.
 
-## Acknowledgment
 
-Good Karma started as a practical product and is now being turned into a shared open-source foundation. If the project is useful to you, the best way to support it is to improve it, document it, or help maintain it.
+## About the Founders
+
+**Elie EL DEBS**  
+Future PhD candidate specializing in neuro-symbolic AI and agentic systems. Elie has 5 years of experience in artificial intelligence, with a strong background in computer vision, machine learning, and applied research.
+
+**Julien Champagne**  
+AI engineer with over 3 years of experience in computer vision and artificial intelligence projects, with a focus on practical applications and robust system design.
+
+We are passionate about building tools that bridge research and real-world impact. Feel free to reach out for collaboration, questions, or contributions!
