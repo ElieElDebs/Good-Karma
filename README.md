@@ -163,48 +163,49 @@ The backend initializes Qdrant during application startup. That means Qdrant mus
 - Containerization: Docker for backend, frontend, and Qdrant
 
 
-## Lancer le projet avec Docker Compose
 
-Pour lancer l’ensemble du projet (backend, frontend, Qdrant) en une seule commande, utilisez Docker Compose à la racine du dépôt :
+## Running the Project with Docker Compose
+
+To launch the entire project (backend, frontend, Qdrant) with a single command, use Docker Compose at the root of the repository:
 
 ```bash
 docker-compose up --build
 ```
 
-Cela va :
-- démarrer Qdrant avec un volume persistant
-- lancer le backend (FastAPI) après que Qdrant soit prêt
-- lancer le frontend (Next.js)
+This will:
+- start Qdrant with a persistent storage volume
+- launch the backend (FastAPI) after Qdrant is ready
+- launch the frontend (Next.js)
 
-L’URL du backend sera automatiquement passée au frontend.
+The backend URL will be automatically passed to the frontend.
 
-Pour arrêter les services :
+To stop all services:
 
 ```bash
 docker-compose down
 ```
 
-Pour toute configuration avancée ou modification des variables d’environnement, référez-vous aux fichiers README présents dans :
-- `Morlana_backend/README.md` pour le backend
-- `Morlana_frontend/README.md` pour le frontend
+For advanced configuration or environment variable changes, refer to the README files in:
+- `Morlana_backend/README.md` for the backend
+- `Morlana_frontend/README.md` for the frontend
 
-## Lancer uniquement le backend ou le frontend
+## Running Only the Backend or Frontend
 
-Les instructions détaillées pour lancer séparément le backend ou le frontend (installation des dépendances, configuration, commandes de démarrage) sont disponibles dans les README respectifs :
+Detailed instructions for running the backend or frontend separately (dependency installation, configuration, start commands) are available in their respective README files:
 
 - [Backend – Morlana_backend/README.md](Morlana_backend/README.md)
 - [Frontend – Morlana_frontend/README.md](Morlana_frontend/README.md)
 
 ## API Surface
 
-Le backend expose une API centrée sur l’analyse de drafts Reddit et la gestion des subreddits :
+The backend exposes an API focused on Reddit draft analysis and subreddit management:
 
-- `/` : healthcheck et version
-- `/search` : analyse de draft Reddit
-- `/subreddits` : gestion des subreddits
-- `/docs` : documentation interactive FastAPI
+- `/`: healthcheck and version
+- `/search`: Reddit draft analysis
+- `/subreddits`: subreddit management
+- `/docs`: FastAPI interactive documentation
 
-Pour une instance locale, la documentation API est disponible sur :
+For a local instance, the API documentation is available at:
 `http://localhost:8000/docs`
 
 ## Contributing
