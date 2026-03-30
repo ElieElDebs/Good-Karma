@@ -22,6 +22,7 @@ app = FastAPI()
 app.include_router(search.router)
 app.include_router(subreddits.router)
 
+
 @app.get("/")
 def read_root():
     return {

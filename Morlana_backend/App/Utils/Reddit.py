@@ -1,6 +1,7 @@
 import praw
 import time
 
+
 class RedditFetcher:
 
     def __init__(self, reddit_id: str, reddit_secret: str, user_agent: str) -> None:
@@ -84,7 +85,7 @@ class RedditFetcher:
                         "nb_downvote": post.downs,
                         "nb_comment": post.num_comments,
                         "date": post.created_utc,
-                        "type" : "unsuccessful"
+                        "type": "unsuccessful",
                     }
                 )
         return filtered_posts
@@ -156,7 +157,7 @@ class RedditFetcher:
                             "nb_downvote": post.downs,
                             "nb_comment": post.num_comments,
                             "date": post.created_utc,
-                            "type" : "successful"
+                            "type": "successful",
                         }
                     )
 
@@ -229,7 +230,7 @@ class RedditFetcher:
                             "nb_downvote": post.downs,
                             "nb_comment": post.num_comments,
                             "date": post.created_utc,
-                            "type" : "successful"
+                            "type": "successful",
                         }
                     )
 
@@ -302,7 +303,7 @@ class RedditFetcher:
                             "nb_downvote": post.downs,
                             "nb_comment": post.num_comments,
                             "date": post.created_utc,
-                            "type" : "successful"
+                            "type": "successful",
                         }
                     )
 

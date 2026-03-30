@@ -14,7 +14,9 @@ router = APIRouter()
 def search(
     title: str,
     body: str,
-    subreddits: list[str] = Query(..., description="List of subreddits to analyze", min_length=1)
+    subreddits: list[str] = Query(
+        ..., description="List of subreddits to analyze", min_length=1
+    ),
 ):
     """
     ## Description:
@@ -30,7 +32,7 @@ def search(
     """
     import math
 
-    print (subreddits)
+    print(subreddits)
 
     def convert(obj):
         if isinstance(obj, np.generic):
@@ -56,15 +58,12 @@ def search(
         body=body,
         top_k=10,
         subreddits=subreddits,
-        min_score=os.getenv("MIN_SCORE", None)
+        min_score=os.getenv("MIN_SCORE", None),
     )
 
     # Get the best time to post for the given subreddits from the json file
     best_times = get_best_times_to_post(subreddits)
-    
+
     result["best_times_to_post"] = best_times
 
-    return {
-        "status": 200,
-        "data": convert(result)
-    }
+    return {"status": 200, "data": convert(result)}

@@ -1,4 +1,5 @@
 reddit:
+# Supprimer également toute cette partie
   api:
     client_id: "reddit_client_id"
     client_secret: "reddit_client_secret"
@@ -13,6 +14,7 @@ database:
     db_name: morlana_db
 
   qdrant:
+  # Supprimer toute cette partie
     host: localhost
     port: 6333
     collection_name: morlana_collection

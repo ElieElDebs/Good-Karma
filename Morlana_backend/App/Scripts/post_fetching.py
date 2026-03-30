@@ -10,6 +10,7 @@ This script handles posts fetching from Reddit and adding their embeddings to th
 
 FETCHER = None
 
+
 def init_reddit_fetcher(
     reddit_id: str, reddit_secret: str, reddit_user_agent: str
 ) -> RedditFetcher:
@@ -34,7 +35,7 @@ def init_reddit_fetcher(
 
 
 def fetch_unsuccessful_posts(
-    threshold_configuration: list[dict] = None
+    threshold_configuration: list[dict] = None,
 ) -> pd.DataFrame:
     """
     Fetch posts from 'new' that are older than min_age_days and have less than max_upvotes and max_comments.
@@ -61,13 +62,13 @@ def fetch_unsuccessful_posts(
             subreddit=subreddit_name,
             max_upvotes=max_upvotes,
             max_comments=max_comments,
-            min_age_days=1
+            min_age_days=1,
         )
 
     return pd.DataFrame(posts)
 
 
-def fetch_hot_posts (threshold_configuration: list[dict] = None) -> pd.DataFrame:
+def fetch_hot_posts(threshold_configuration: list[dict] = None) -> pd.DataFrame:
     """
     Fetch hot posts from specified subreddits based on the given threshold configuration.
 
@@ -105,7 +106,7 @@ def fetch_hot_posts (threshold_configuration: list[dict] = None) -> pd.DataFrame
     return pd.DataFrame(all_posts)
 
 
-def fetch_rising_posts (threshold_configuration: list[dict] = None) -> pd.DataFrame:
+def fetch_rising_posts(threshold_configuration: list[dict] = None) -> pd.DataFrame:
     """
     Fetch rising posts from specified subreddits based on the given threshold configuration.
 
@@ -187,7 +188,7 @@ def fetch_top_posts(threshold_configuration: list[dict] = None) -> pd.DataFrame:
     return pd.DataFrame(all_posts)
 
 
-def calculate_best_date_to_post(posts:pd.DataFrame) -> list[dict[str, str]]:
+def calculate_best_date_to_post(posts: pd.DataFrame) -> list[dict[str, str]]:
     """
     Analyzes the posting times of the given posts to determine the best date and time to post,
     based on historical engagement data for each subreddit present in the posts DataFrame.
@@ -196,25 +197,30 @@ def calculate_best_date_to_post(posts:pd.DataFrame) -> list[dict[str, str]]:
     # Step 1: Group posts by subreddit and calculate average engagement metrics for each time slot
     best_times = dict()
 
-    for subreddit, group in posts.groupby('subreddit'):
-        group["date"] = pd.to_datetime(group["date"], unit='s')
-        group['hour'] = group['date'].dt.hour
-        group['day_of_week'] = group['date'].dt.day_name()
+    for subreddit, group in posts.groupby("subreddit"):
+        group["date"] = pd.to_datetime(group["date"], unit="s")
+        group["hour"] = group["date"].dt.hour
+        group["day_of_week"] = group["date"].dt.day_name()
 
-        engagement_by_time = group.groupby(['day_of_week', 'hour']).agg({
-            'nb_upvote': 'mean',
-            'nb_comment': 'mean'
-        }).reset_index()
+        engagement_by_time = (
+            group.groupby(["day_of_week", "hour"])
+            .agg({"nb_upvote": "mean", "nb_comment": "mean"})
+            .reset_index()
+        )
 
         # Step 2: Identify the time slot with the highest average engagement
-        engagement_by_time['total_engagement'] = engagement_by_time['nb_upvote'] + engagement_by_time['nb_comment']
-        best_time = engagement_by_time.loc[engagement_by_time['total_engagement'].idxmax()]
+        engagement_by_time["total_engagement"] = (
+            engagement_by_time["nb_upvote"] + engagement_by_time["nb_comment"]
+        )
+        best_time = engagement_by_time.loc[
+            engagement_by_time["total_engagement"].idxmax()
+        ]
 
         best_times[subreddit] = {
-            'best_day': best_time['day_of_week'],
-            'best_hour': int(best_time['hour']),
-            'average_upvotes': best_time['nb_upvote'],
-            'average_comments': best_time['nb_comment']
+            "best_day": best_time["day_of_week"],
+            "best_hour": int(best_time["hour"]),
+            "average_upvotes": best_time["nb_upvote"],
+            "average_comments": best_time["nb_comment"],
         }
 
     return best_times
@@ -232,8 +238,9 @@ def write_best_times_to_file(best_times: list[dict[str, str]], file_path: str) -
         None
     """
 
-    with open(file_path, 'w') as file :
+    with open(file_path, "w") as file:
         import json
+
         json.dump(best_times, file, indent=4)
 
 
@@ -327,22 +334,26 @@ def call_fetching_pipeline(treshold_configuration: dict, collection_name: str) -
     posts_df = fetch_top_posts(treshold_configuration)
     print(f"Fetched {len(posts_df)} posts.")
 
-    print ("Fetching Hot posts...")
+    print("Fetching Hot posts...")
     hot_posts_df = fetch_hot_posts(treshold_configuration)
     print(f"Fetched {len(hot_posts_df)} hot posts.")
 
-    print ("Fetching Rising posts...")
+    print("Fetching Rising posts...")
     rising_posts_df = fetch_rising_posts(treshold_configuration)
     print(f"Fetched {len(rising_posts_df)} rising posts.")
-    
-    posts_df = pd.concat([posts_df, hot_posts_df, rising_posts_df]).drop_duplicates(subset=['id']).reset_index(drop=True)
+
+    posts_df = (
+        pd.concat([posts_df, hot_posts_df, rising_posts_df])
+        .drop_duplicates(subset=["id"])
+        .reset_index(drop=True)
+    )
     print(f"Total unique posts after combining: {len(posts_df)}")
 
-    print ("Calculating best date to post...")
+    print("Calculating best date to post...")
     best_times = calculate_best_date_to_post(posts_df)
     print("Best posting times calculated:", best_times)
 
-    print ("Writing best posting times to file...")
+    print("Writing best posting times to file...")
     write_best_times_to_file(best_times, "best_posting_times.json")
     print("Best posting times written to 'best_posting_times.json'.")
 

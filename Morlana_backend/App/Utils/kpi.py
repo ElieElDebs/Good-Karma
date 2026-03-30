@@ -178,18 +178,107 @@ def get_most_used_words(df, text_column="post", top_n=30, lang="english"):
 
     # Exclude numbers expresed as words
     number_words = {
-        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-        "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty",
-        "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety", "hundred", "thousand", "million", "billion"
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+        "twenty",
+        "thirty",
+        "forty",
+        "fifty",
+        "sixty",
+        "seventy",
+        "eighty",
+        "ninety",
+        "hundred",
+        "thousand",
+        "million",
+        "billion",
     }
 
     diver_words = {
-        'n','r', "also", "way", "get", "like", "just", "im", "dont", "know", "think", "people",
-        "time", "good", "make", "even", "really", "much", "want", "need", "use", "used", "using",
-        "still", "see", "look", "looking", "thing", "things", "post", "posts", "every", "day", "days", "http",
-        "lot", "https", "com", "www", "e", "let", "u", "got", "get", "would", "thought", "take", 'say', 'find',
-        "something", "anything", "nothing", "ive", "ive", "theres", "whats", "hes", "shes", "theyre", "hey", "hello", "hi",
-        "everyone", "go", "better", "could"
+        "n",
+        "r",
+        "also",
+        "way",
+        "get",
+        "like",
+        "just",
+        "im",
+        "dont",
+        "know",
+        "think",
+        "people",
+        "time",
+        "good",
+        "make",
+        "even",
+        "really",
+        "much",
+        "want",
+        "need",
+        "use",
+        "used",
+        "using",
+        "still",
+        "see",
+        "look",
+        "looking",
+        "thing",
+        "things",
+        "post",
+        "posts",
+        "every",
+        "day",
+        "days",
+        "http",
+        "lot",
+        "https",
+        "com",
+        "www",
+        "e",
+        "let",
+        "u",
+        "got",
+        "get",
+        "would",
+        "thought",
+        "take",
+        "say",
+        "find",
+        "something",
+        "anything",
+        "nothing",
+        "ive",
+        "ive",
+        "theres",
+        "whats",
+        "hes",
+        "shes",
+        "theyre",
+        "hey",
+        "hello",
+        "hi",
+        "everyone",
+        "go",
+        "better",
+        "could",
     }
 
     stop_words.update(number_words)
@@ -220,14 +309,16 @@ def get_optimal_date_to_post(df, date_column="date", upvote_column="nb_upvote"):
 
     optimal_date = "None"
 
-    try :
+    try:
         grouped = df.groupby(date_column)[upvote_column].mean()
         optimal_date = grouped.idxmax()
-        optimal_date = datetime.datetime.fromtimestamp(optimal_date).strftime("%A %d %B %Y %H:%M")
+        optimal_date = datetime.datetime.fromtimestamp(optimal_date).strftime(
+            "%A %d %B %Y %H:%M"
+        )
 
     except Exception:
-        print ("Error in calculating optimal date to post.")
-    
+        print("Error in calculating optimal date to post.")
+
     finally:
         return optimal_date
 
@@ -261,7 +352,9 @@ def calculate_post_to_compare_kpi(text: str, preprocessed_text: str) -> dict:
     return kpi_dict
 
 
-def calculate_titles_kpi(dataframe, text_column:str="title", raw_column="title") -> dict[str, any]:
+def calculate_titles_kpi(
+    dataframe, text_column: str = "title", raw_column="title"
+) -> dict[str, any]:
     """
     Calculate various KPIs for the titles in the given DataFrame.
 
@@ -273,56 +366,84 @@ def calculate_titles_kpi(dataframe, text_column:str="title", raw_column="title")
     Returns:
         tuple[dict, pd.DataFrame]: A tuple containing a dictionary of global KPIs and a DataFrame with individual title KPIs.
     """
-    
+
     copied_dataframe = dataframe.copy()
 
     # get title length
     copied_dataframe["title_length"] = copied_dataframe[raw_column].apply(len)
 
     # get title word count
-    copied_dataframe["title_word_count"] = copied_dataframe[raw_column].apply(count_words)
+    copied_dataframe["title_word_count"] = copied_dataframe[raw_column].apply(
+        count_words
+    )
 
     # Get title most used words
     most_used_words = get_most_used_words(copied_dataframe, text_column)
 
     # Get title number of questions
-    copied_dataframe["title_question_count"] = copied_dataframe[text_column].apply(coutn_question_marks)
+    copied_dataframe["title_question_count"] = copied_dataframe[text_column].apply(
+        coutn_question_marks
+    )
 
     # Get title number of exclamations
-    copied_dataframe["title_exclamation_count"] = copied_dataframe[text_column].apply(count_exclamation_marks)
+    copied_dataframe["title_exclamation_count"] = copied_dataframe[text_column].apply(
+        count_exclamation_marks
+    )
 
     # get title polarity
-    copied_dataframe["title_polarity"] = copied_dataframe[raw_column].apply(calculate_polarity)
+    copied_dataframe["title_polarity"] = copied_dataframe[raw_column].apply(
+        calculate_polarity
+    )
 
     # get title subjectivity
-    copied_dataframe["title_subjectivity"] = copied_dataframe[raw_column].apply(calculate_subjectivity)
+    copied_dataframe["title_subjectivity"] = copied_dataframe[raw_column].apply(
+        calculate_subjectivity
+    )
 
     # get title uppercase word count
-    copied_dataframe["title_uppercase_word_count"] = copied_dataframe[raw_column].apply(count_uppercase_words)
+    copied_dataframe["title_uppercase_word_count"] = copied_dataframe[raw_column].apply(
+        count_uppercase_words
+    )
 
     def r2(val):
         return round(float(val), 2)
 
     return {
-            "average_title_length": r2(copied_dataframe["title_length"].mean()),
-            "median_title_length": r2(copied_dataframe["title_length"].median()),
-            "average_title_word_count": r2(copied_dataframe["title_word_count"].mean()),
-            "median_title_word_count": r2(copied_dataframe["title_word_count"].median()),
-            "most_used_title_words": most_used_words,
-            "average_title_question_count": r2(copied_dataframe["title_question_count"].mean()),
-            "median_title_question_count": r2(copied_dataframe["title_question_count"].median()),
-            "average_title_exclamation_count": r2(copied_dataframe["title_exclamation_count"].mean()),
-            "median_title_exclamation_count": r2(copied_dataframe["title_exclamation_count"].median()),
-            "average_title_polarity": r2(copied_dataframe["title_polarity"].mean()),
-            "median_title_polarity": r2(copied_dataframe["title_polarity"].median()),
-            "average_title_subjectivity": r2(copied_dataframe["title_subjectivity"].mean()),
-            "median_title_subjectivity": r2(copied_dataframe["title_subjectivity"].median()),
-            "average_title_uppercase_word_count": r2(copied_dataframe["title_uppercase_word_count"].mean()),
-            "median_title_uppercase_word_count": r2(copied_dataframe["title_uppercase_word_count"].median()),
+        "average_title_length": r2(copied_dataframe["title_length"].mean()),
+        "median_title_length": r2(copied_dataframe["title_length"].median()),
+        "average_title_word_count": r2(copied_dataframe["title_word_count"].mean()),
+        "median_title_word_count": r2(copied_dataframe["title_word_count"].median()),
+        "most_used_title_words": most_used_words,
+        "average_title_question_count": r2(
+            copied_dataframe["title_question_count"].mean()
+        ),
+        "median_title_question_count": r2(
+            copied_dataframe["title_question_count"].median()
+        ),
+        "average_title_exclamation_count": r2(
+            copied_dataframe["title_exclamation_count"].mean()
+        ),
+        "median_title_exclamation_count": r2(
+            copied_dataframe["title_exclamation_count"].median()
+        ),
+        "average_title_polarity": r2(copied_dataframe["title_polarity"].mean()),
+        "median_title_polarity": r2(copied_dataframe["title_polarity"].median()),
+        "average_title_subjectivity": r2(copied_dataframe["title_subjectivity"].mean()),
+        "median_title_subjectivity": r2(
+            copied_dataframe["title_subjectivity"].median()
+        ),
+        "average_title_uppercase_word_count": r2(
+            copied_dataframe["title_uppercase_word_count"].mean()
+        ),
+        "median_title_uppercase_word_count": r2(
+            copied_dataframe["title_uppercase_word_count"].median()
+        ),
     }
 
 
-def calculate_body_kpi(dataframe, text_column:str="text", raw_column="text") -> tuple[dict, pd.DataFrame]:
+def calculate_body_kpi(
+    dataframe, text_column: str = "text", raw_column="text"
+) -> tuple[dict, pd.DataFrame]:
     """
     Calculate various KPIs for the posts in the given DataFrame.
 
@@ -370,7 +491,7 @@ def calculate_body_kpi(dataframe, text_column:str="text", raw_column="text") -> 
 
     # Global KPIs
     global_kpis = {
-        "words_and_sentences" : {
+        "words_and_sentences": {
             "average_word_count": r2(copied_dataframe["word_count"].mean()),
             "median_word_count": r2(copied_dataframe["word_count"].median()),
             "average_sentence_count": r2(copied_dataframe["sentence_count"].mean()),
@@ -378,37 +499,77 @@ def calculate_body_kpi(dataframe, text_column:str="text", raw_column="text") -> 
             "most_used_words": get_most_used_words(copied_dataframe, text_column),
         },
         "polarity_and_readability_subjectivity": {
-            "average_readability_score": r2(copied_dataframe["readability_score"].mean()),
-            "median_readability_score": r2(copied_dataframe["readability_score"].median()),
+            "average_readability_score": r2(
+                copied_dataframe["readability_score"].mean()
+            ),
+            "median_readability_score": r2(
+                copied_dataframe["readability_score"].median()
+            ),
             "average_polarity": r2(copied_dataframe["polarity"].mean()),
             "median_polarity": r2(copied_dataframe["polarity"].median()),
             "average_subjectivity": r2(copied_dataframe["subjectivity"].mean()),
             "median_subjectivity": r2(copied_dataframe["subjectivity"].median()),
         },
-        "scores" : {
+        "scores": {
             "total_posts": int(copied_dataframe.shape[0]),
-            "min_score": r2(copied_dataframe["score"].min()) if "score" in copied_dataframe.columns else 0,
-            "max_score": r2(copied_dataframe["score"].max()) if "score" in copied_dataframe.columns else 0,
-            "average_score": r2(copied_dataframe["score"].mean()) if "score" in copied_dataframe.columns else 0,
-            "median_score": r2(copied_dataframe["score"].median()) if "score" in copied_dataframe.columns else 0,
-            "min_upvotes": r2(copied_dataframe["nb_upvote"].min()) if "nb_upvote" in copied_dataframe.columns else 0,
-            "max_upvotes": r2(copied_dataframe["nb_upvote"].max()) if "nb_upvote" in copied_dataframe.columns else 0,
-            "average_upvotes": r2(copied_dataframe["nb_upvote"].mean()) if "nb_upvote" in copied_dataframe.columns else 0,
-            "median_upvotes": r2(copied_dataframe["nb_upvote"].median()) if "nb_upvote" in copied_dataframe.columns else 0,
+            "min_score": (
+                r2(copied_dataframe["score"].min())
+                if "score" in copied_dataframe.columns
+                else 0
+            ),
+            "max_score": (
+                r2(copied_dataframe["score"].max())
+                if "score" in copied_dataframe.columns
+                else 0
+            ),
+            "average_score": (
+                r2(copied_dataframe["score"].mean())
+                if "score" in copied_dataframe.columns
+                else 0
+            ),
+            "median_score": (
+                r2(copied_dataframe["score"].median())
+                if "score" in copied_dataframe.columns
+                else 0
+            ),
+            "min_upvotes": (
+                r2(copied_dataframe["nb_upvote"].min())
+                if "nb_upvote" in copied_dataframe.columns
+                else 0
+            ),
+            "max_upvotes": (
+                r2(copied_dataframe["nb_upvote"].max())
+                if "nb_upvote" in copied_dataframe.columns
+                else 0
+            ),
+            "average_upvotes": (
+                r2(copied_dataframe["nb_upvote"].mean())
+                if "nb_upvote" in copied_dataframe.columns
+                else 0
+            ),
+            "median_upvotes": (
+                r2(copied_dataframe["nb_upvote"].median())
+                if "nb_upvote" in copied_dataframe.columns
+                else 0
+            ),
         },
-        "links_and_time" : {
+        "links_and_time": {
             "total_posts_with_links": copied_dataframe["is_there_link"].sum(),
-            "percentage_posts_with_links": r2(copied_dataframe["is_there_link"].mean() * 100),
-            "optimal_date_to_post": str(get_optimal_date_to_post(
-                copied_dataframe, date_column="date", upvote_column="nb_upvote"
-            ))
-        }
+            "percentage_posts_with_links": r2(
+                copied_dataframe["is_there_link"].mean() * 100
+            ),
+            "optimal_date_to_post": str(
+                get_optimal_date_to_post(
+                    copied_dataframe, date_column="date", upvote_column="nb_upvote"
+                )
+            ),
+        },
     }
 
     return (global_kpis, dict_dataframe)
 
 
-def calculate_GES_new (kpi_dict:dict) -> dict[str, any]:
+def calculate_GES_new(kpi_dict: dict) -> dict[str, any]:
     """
     Calculate Global Engagement Score (GES) based on the given KPI dictionary.
 
@@ -429,7 +590,7 @@ def calculate_GES_new (kpi_dict:dict) -> dict[str, any]:
     return ges_result, ges_result.get("advices", [])
 
 
-def calculate_GES (kpi_dict:dict) -> dict[str, any]:
+def calculate_GES(kpi_dict: dict) -> dict[str, any]:
     """
     Calculate Global Engagement Score (GES) based on the given KPI dictionary.
 
@@ -444,11 +605,16 @@ def calculate_GES (kpi_dict:dict) -> dict[str, any]:
     if "data" not in kpi_dict:
         kpi_dict = {"data": kpi_dict}
 
-    semantic_similarity_avg = kpi_dict["data"].get("successful_posts", {}).get("global_body_kpi", {}).get("scores", {}).get("average_score", 0.0)
+    semantic_similarity_avg = (
+        kpi_dict["data"]
+        .get("successful_posts", {})
+        .get("global_body_kpi", {})
+        .get("scores", {})
+        .get("average_score", 0.0)
+    )
 
     ges_calculator = DynamicGESCalculator(kpi_dict)
     ges_result = ges_calculator.calculate_ges(semantic_similarity_avg)
     advice_list = ges_calculator.generate_advice_list(ges_result)
 
     return ges_result, advice_list
-

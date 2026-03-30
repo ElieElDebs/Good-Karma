@@ -3,6 +3,7 @@ from App.Middleware.subreddits import get_subreddits_names
 
 router = APIRouter()
 
+
 @router.get("/subreddits")
 def get_subreddits():
     """
@@ -14,9 +15,4 @@ def get_subreddits():
     """
     subreddits = get_subreddits_names()
 
-    return {
-        "status": 200,
-        "data": {
-            "subreddits": subreddits
-        }
-    }
+    return {"status": 200, "data": {"subreddits": subreddits}}

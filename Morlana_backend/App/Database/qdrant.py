@@ -156,5 +156,5 @@ def search_embeddings(
         limit=top_k,
         query_filter=filter,
     )
-    
+
     return [{"payload": r.payload, "score": r.score} for r in results]
