@@ -3,10 +3,21 @@ import numpy as np
 
 class DynamicGESCalculator:
     """
-    Calcule le Score d'Engagement Global (GES) d'un brouillon en utilisant des cibles
-    dynamiques (TARGET_*) extraites des 'successful_posts' pertinents pour ce brouillon.
+    Calculates the Global Engagement Score (GES) of a draft using dynamic targets (TARGET_*) extracted from relevant 'successful_posts' for that draft.
+    This approach ensures that the GES is specific to the semantic context.
 
-    Cette approche garantit que le GES est spécifique au contexte sémantique.
+    The GES is calculated based on four main factors:
+    1. F_Titre (Title Hook): Evaluates the emotional polarity of the title compared to successful posts.
+    2. F_Lisibilité (Readability): Measures how easy the body text is to read, with an asymmetric penalty for being below the target.
+    3. F_Longueur (Length): Assesses the word count of the body, with a logarithmic progression to encourage reaching the target length.
+    4. F_Sémantique (Semantic Alignment): Evaluates how semantically close
+         
+    the draft is to successful posts in the same category, acting as a gatekeeper for the overall score.
+    Additionally, a lexical factor (F_Lexical) is calculated based on the presence of frequently used words in successful posts, adding another layer of strategic advice.
+
+    The final GES is a weighted combination of these factors, multiplied by a confidence multiplier derived from the semantic similarity, ensuring that drafts that are not semantically aligned receive a lower score regardless of their structural quality.
+
+    The class also generates strategic advice based on the calculated factors, providing actionable insights for improving the draft.
     """
 
     def __init__(self, full_kpi_data: dict):

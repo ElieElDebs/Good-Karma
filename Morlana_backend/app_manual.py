@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 
 from App.Scripts.post_fetching import init_reddit_fetcher, call_fetching_pipeline
 
+# Init Qdrant
+from App.Database.qdrant import initialize_qdrant, initialize_model, create_collection
+
 # Load .env file for environment variables
 load_dotenv("Configuration/.env")
 
@@ -12,13 +15,14 @@ load_dotenv("Configuration/.env")
 with open("Configuration/workflow.yaml", "r") as workflow_file:
     workflow_config = yaml.safe_load(workflow_file)
 
-
-# Init Qdrant
-from App.Database.qdrant import initialize_qdrant, initialize_model
-
 print("Initializing Qdrant and Model...")
 initialize_qdrant()
 initialize_model()
+create_collection(
+    collection_name=os.getenv("QDRANT_COLLECTION_NAME"),
+    distance="Cosine",
+    vector_size=768,
+)
 print("Qdrant and Model initialized.")
 
 # ========================= Subreddit Post Fetching and Embedding Addition ========================= #

@@ -13,7 +13,7 @@ from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 
 
 def _search_similar_posts_new(
-    query: str, top_k: int = 5, subreddits: list = None, min_score: float = None
+    query: str, top_k: int = 5, subreddits: list = None
 ) -> dict[str, pd.DataFrame]:
     """
     Search for posts in the database in regards of the given subreddits names and the query.
@@ -89,7 +89,7 @@ def calculcate_posts_kpi_new(
 
     # Step 3 : Search for similar posts
     posts_by_subreddit = _search_similar_posts_new(
-        query=query, top_k=top_k, subreddits=subreddits, min_score=min_score
+        query=query, top_k=top_k, subreddits=subreddits
     )
 
     api_response: dict[str, any] = {}
@@ -167,7 +167,7 @@ def calculcate_posts_kpi_new(
 
     return api_response
 
-
+# TODO: Delete this function
 def _search_similar_posts(
     query: str, top_k: int = 5, subreddits: list = None, min_score: float = None
 ) -> tuple[dict, pd.DataFrame]:
@@ -235,7 +235,7 @@ def _search_similar_posts(
 
     return df, df_uns
 
-
+# TODO: Delete this function
 def calculcate_posts_kpi(
     title: str, body: str, top_k: int, min_score: float = None
 ) -> dict[str, any]:

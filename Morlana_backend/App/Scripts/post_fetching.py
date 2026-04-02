@@ -1,12 +1,13 @@
+"""
+This script handles posts fetching from Reddit and adding their embeddings to the Qdrant database.
+"""
+
 import pandas as pd
 
 from App.Database.qdrant import add_embeddings
 from App.Utils.Reddit import RedditFetcher
 from App.Utils.utils import convert_to_uuids, preprocess_text
 
-"""
-This script handles posts fetching from Reddit and adding their embeddings to the Qdrant database.
-"""
 
 FETCHER = None
 
@@ -33,7 +34,7 @@ def init_reddit_fetcher(
 
     return FETCHER
 
-
+# TODO: Delete this function To Delete, we dont fetch unseccessful posts
 def fetch_unsuccessful_posts(
     threshold_configuration: list[dict] = None,
 ) -> pd.DataFrame:
@@ -192,6 +193,12 @@ def calculate_best_date_to_post(posts: pd.DataFrame) -> list[dict[str, str]]:
     """
     Analyzes the posting times of the given posts to determine the best date and time to post,
     based on historical engagement data for each subreddit present in the posts DataFrame.
+
+    Args:
+        posts (pd.DataFrame): DataFrame containing the posts data, including 'subreddit', 'date', 'nb_upvote', and 'nb_comment' columns.
+
+    Returns:
+        list[dict[str, str]]: List of dictionaries containing the best posting times per subreddit.
     """
 
     # Step 1: Group posts by subreddit and calculate average engagement metrics for each time slot
@@ -244,19 +251,6 @@ def write_best_times_to_file(best_times: list[dict[str, str]], file_path: str) -
         json.dump(best_times, file, indent=4)
 
 
-def post_preprocess(text: str) -> str:
-    """
-    Preprocesses the given text using the preprocess_text utility function.
-
-    Args:
-        text (str): The text to preprocess.
-
-    Returns:
-        str: The preprocessed text.
-    """
-    return preprocess_text(text)
-
-
 def add_posts_embeddings(collection_name: str, posts_df: pd.DataFrame) -> None:
     """
     Converts posts DataFrame to embeddings and adds them to the Qdrant database.
@@ -301,9 +295,9 @@ def preprocess_posts_dataframe(posts_df: pd.DataFrame) -> pd.DataFrame:
     if "text" not in posts_df.columns:
         raise ValueError("DataFrame must contain a 'text' column.")
 
-    posts_df["preprocessed_title"] = posts_df["title"].apply(post_preprocess)
+    posts_df["preprocessed_title"] = posts_df["title"].apply(preprocess_text)
 
-    posts_df["preprocessed_text"] = posts_df["text"].apply(post_preprocess)
+    posts_df["preprocessed_text"] = posts_df["text"].apply(preprocess_text)
 
     return posts_df
 

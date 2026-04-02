@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 Temp
+qdrant_storage
 
 # C extensions
 *.so
