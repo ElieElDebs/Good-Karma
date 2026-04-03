@@ -1,151 +1,163 @@
+
+---
+
+**Developed by Elie El Debs**
+<p align="center">
+   <img src="../images/transparent-logo.png" alt="Good Karma logo" width="140" />
+</p>
+
 # Morlana Backend
 
-Morlana is a backend API for Reddit post analysis, embedding, and KPI calculation using FastAPI, Qdrant, and NLP models.
+Morlana Backend is the core API and analysis engine for the Good Karma project. It provides Reddit post analysis, semantic search, and subreddit management via a FastAPI service, leveraging a Qdrant vector database for similarity search.
+
+---
 
 ## Table of Contents
 
 - [Features](#features)
-- [Prerequisites](#prerequisites)
+- [Architecture](#architecture)
 - [Installation](#installation)
-- [Configuration](#configuration)
-- [Qdrant Setup (Docker)](#qdrant-setup-docker)
-- [Remplissage de la base de connaissance Qdrant](#remplissage-de-la-base-de-connaissance-qdrant)
-- [Running the Project](#running-the-project)
-- [API Endpoints](#api-endpoints)
-- [Troubleshooting](#troubleshooting)
+- [Quick Start](#quick-start)
+- [API Usage](#api-usage)
+- [Qdrant Knowledge Base](#qdrant-knowledge-base)
+- [Testing](#testing)
+- [Contributing](#contributing)
 - [License](#license)
 
 ---
 
 ## Features
 
-- Fetch Reddit posts and analyze their KPIs.
-- Store and search embeddings using Qdrant vector database.
-- FastAPI-based REST API.
-- NLP preprocessing and sentiment analysis.
+- **Reddit post analysis**: Extracts KPIs and provides actionable advice for Reddit drafts.
+- **Semantic search**: Finds similar posts using Qdrant vector search.
+- **Subreddit management**: Handles subreddit metadata and targeting.
+- **REST API**: Exposes endpoints for analysis, search, and subreddit operations.
+- **FastAPI**: Modern, async Python backend with auto-generated docs.
 
-## Prerequisites
+## Architecture
 
-- Python 3.9+
-- [Docker](https://www.docker.com/get-started)
-- [Git](https://git-scm.com/)
-- Reddit API credentials (client ID, client secret, user agent)
+```
+User
+   |
+   v
+Frontend (Next.js)
+   |
+   v
+Morlana Backend (FastAPI)
+   |
+   v
+Qdrant (Vector DB)
+```
+
+**Key modules:**
+
+- `app.py`: FastAPI entrypoints
+- `app_manual.py`: Script that populate the Qdrant client based on Workflow config file
+- `App/Database/qdrant.py`: Qdrant client and DB logic
+- `App/Middleware/`: Business logic (search, subreddit, etc.)
+- `App/Utils/`: KPI, scoring, Reddit API, utilities
+- `Routes/`: API route definitions
+- `Configuration/`: App and workflow configs
+
+**Data flow:**
+1. User submits a Reddit draft via the frontend.
+2. Backend analyzes the draft, computes KPIs, and queries Qdrant for similar posts.
+3. Results (KPIs, advice, similar posts) are returned to the frontend.
 
 ## Installation
 
-1. **Clone the repository:**
+### Prerequisites
 
-   ```bash
-   git clone https://github.com/yourusername/morlana_backend.git
-   cd morlana_backend
-   ```
+- Python 3.10+
+- [Qdrant](https://qdrant.tech/) running locally or via Docker
+- (Optional) Docker & Docker Compose
 
-2. **Create and activate a virtual environment:**
+### Local Setup
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+```bash
+# Clone the repository (from the root)
+git clone https://github.com/yourusername/good_karma.git
+cd good_karma/Morlana_backend
 
-3. **Install Python dependencies:**
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Install dependencies
+pip install -r requirements.txt
+```
 
-## Configuration
+### Docker
 
-1. **Environment Variables:**
+You can run the backend and Qdrant using Docker Compose from the project root:
 
-   Edit the `.env` file in `Configuration/.env` to set your database and Qdrant configuration:
+```bash
+docker-compose up --build
+```
 
-   ```
-   QDRANT_HOST = localhost
-   QDRANT_PORT = 6333
-   ```
+This will start Qdrant, the backend, and the frontend (see main README for details).
 
-2. **Reddit API Credentials:**
+## Quick Start
 
-   You will need to provide your Reddit API credentials when initializing the Reddit fetcher in your scripts.
+### Run Backend Only
 
-## Qdrant Setup (Docker)
+```bash
+# Ensure Qdrant is running (see below for DB setup)
+uvicorn app:app --reload
+```
 
-1. **Install Docker:**
+The API will be available at `http://localhost:8000`.
 
-   Download and install Docker from [here](https://www.docker.com/get-started).
+### Healthcheck
 
-2. **Create a Docker network (recommended):**
+Test the backend is running:
 
-   To allow containers to communicate (for example, if you add a database later), create a Docker network:
+```bash
+curl http://localhost:8000/
+```
 
-   ```bash
-   docker network create morlana-net
-   ```
+## API Usage
 
-3. **Pull the Qdrant Docker image:**
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Reddit draft analysis**: `POST /search`
+- **Subreddit management**: `GET/POST /subreddits`
+- **Healthcheck**: `GET /`
 
-   ```bash
-   docker pull qdrant/qdrant
-   ```
+Example request:
 
-4. **Run Qdrant:**
+```bash
+curl -X POST "http://localhost:8000/search" -H "Content-Type: application/json" -d '{"title": "My Reddit post", "body": "Post content..."}'
+```
 
-   ```bash
-   docker run -p 6333:6333 -p 6334:6334 -v "$(pwd)/qdrant_storage:/qdrant/storage:z" --network morlana-net --name qdrant-db qdrant/qdrant
-   ```
+See the interactive docs for full endpoint details and schemas.
 
-   This will start Qdrant on `localhost:6333`.
+## Qdrant Knowledge Base
 
-## Remplissage de la base de connaissance Qdrant
+The backend requires a populated Qdrant collection for semantic search. By default, the collection must exist and be filled with Reddit post embeddings.
 
-La base de connaissance Qdrant est vide lors de la première utilisation.  
-Pour créer la collection et remplir la base avec des données issues de Reddit :
+### Options for Setup
 
-1. **Créer la collection Qdrant et lancer le remplissage**  
-   Exécutez le script suivant :
+1. **Populate via Reddit API**: Use the provided scripts to fetch and embed posts (requires Reddit developer credentials filled in the `.env` file in the config space).
+2. **Import a pre-built collection**: If provided, download the Qdrant export and place it in `qdrant_storage/` as documented. Run the import script if available.
 
-   ```bash
-   python app_manual.py
-   ```
+> **Note:** Providing a sample Qdrant collection lowers the barrier for new users. Ensure no sensitive data is included.
 
-   Ce script va :
-   - Créer la collection dans Qdrant si elle n'existe pas.
-   - Récupérer les posts Reddit selon la configuration.
-   - Ajouter les embeddings dans la base Qdrant.
+### Qdrant Management
 
-2. **Vérifiez que la base est bien remplie avant d'utiliser l'API pour la recherche.**
+- Collection config: `qdrant_storage/collections/morlana_collection/`
+- Storage volume: `qdrant_storage/`
+- See [Qdrant docs](https://qdrant.tech/documentation/) for manual management.
 
-## Running the Project
 
-1. **Start Qdrant (see above).**
+## Contributing
 
-2. **Start the FastAPI server:**
+Contributions are welcome! Please:
 
-   ```bash
-   uvicorn app:app --reload
-   ```
-
-   The API will be available at `http://localhost:8000`.
-
-## API Endpoints
-
-- `/` : Health check and API info.
-- `/search` : Search embeddings (see `Routes/search.py`).
-- `/subreddits` : Subreddit-related endpoints (see `Routes/subreddits.py`).
-- `/docs` : Show the documentation of the API
-
-Refer to the code and FastAPI docs for more details.
-
-## Troubleshooting
-
-- **Qdrant not running:** Ensure Docker is running and Qdrant is started.
-- **Model download issues:** Check your internet connection for downloading NLP models.
-- **Reddit API errors:** Verify your credentials and Reddit API limits.
+1. Open an issue for bugs or feature requests.
+2. Fork the repo and create a feature branch.
+3. Keep pull requests focused and well-documented.
+4. Follow code style and update documentation as needed.
 
 ## License
 
-This project is licensed under the MIT License.
-
----
-
-**Developed by ArduiPie**
+This project is licensed under the GNU Affero General Public License v3.0. See [../LICENSE](../LICENSE) for details.

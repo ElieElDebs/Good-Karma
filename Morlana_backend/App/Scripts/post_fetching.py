@@ -358,3 +358,45 @@ def call_fetching_pipeline(treshold_configuration: dict, collection_name: str) -
     print(f"Adding embeddings to Qdrant collection '{collection_name}'...")
     add_posts_embeddings(collection_name, posts_df)
     print("Embeddings added to Qdrant. Pipeline finished.")
+
+
+def export_pipeline(treshold_configuration: dict) -> pd.DataFrame:
+    """
+    Calls the entire fetching pipeline: fetches posts, preprocesses them, and adds their embeddings to Qdrant.
+
+    Args:
+        treshold_configuration (dict): Configuration defining subreddit names, upvote and comment thresholds.
+
+    Exception:
+        Raises an exception if the Reddit fetcher is not initialized.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the fetched posts.
+    """
+
+    global FETCHER
+
+    if FETCHER is None:
+        raise Exception(
+            "Reddit fetcher not initialized. Call __init_reddit_fetcher first."
+        )
+
+    print("Starting fetching pipeline...")
+    posts_df = fetch_top_posts(treshold_configuration)
+    print(f"Fetched {len(posts_df)} posts.")
+
+    print("Fetching Hot posts...")
+    hot_posts_df = fetch_hot_posts(treshold_configuration)
+    print(f"Fetched {len(hot_posts_df)} hot posts.")
+
+    print("Fetching Rising posts...")
+    rising_posts_df = fetch_rising_posts(treshold_configuration)
+    print(f"Fetched {len(rising_posts_df)} rising posts.")
+
+    posts_df = (
+        pd.concat([posts_df, hot_posts_df, rising_posts_df])
+        .drop_duplicates(subset=["id"])
+        .reset_index(drop=True)
+    )
+
+    return posts_df
