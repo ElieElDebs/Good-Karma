@@ -28,7 +28,7 @@ def initialize_qdrant(host: str = "localhost", port: int = 6333) -> None:
 
 
 def create_collection(
-    collection_name: str, vector_size: int = 384, distance: str = "Cosine"
+    collection_name: str, vector_size: int = 768, distance: str = "Cosine"
 ) -> None:
     """
     Create a Qdrant collection if it does not exist.
