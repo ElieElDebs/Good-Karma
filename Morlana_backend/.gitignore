@@ -5,6 +5,8 @@ __pycache__/
 
 Temp
 qdrant_storage
+/Configuration/workflow.yaml
+/Configuration/best_posting_times.json
 
 # C extensions
 *.so

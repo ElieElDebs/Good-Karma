@@ -3,6 +3,7 @@ This script handles posts fetching from Reddit and adding their embeddings to th
 """
 
 import pandas as pd
+import os
 
 from App.Database.qdrant import add_embeddings
 from App.Utils.Reddit import RedditFetcher
@@ -244,6 +245,11 @@ def write_best_times_to_file(best_times: list[dict[str, str]], file_path: str) -
     Returns:
         None
     """
+
+    # If the file does not exist, create it and write an empty list
+    if not os.path.exists(file_path):
+        with open(file_path, "w") as file:
+            file.write("[]")
 
     with open(file_path, "w") as file:
         import json
