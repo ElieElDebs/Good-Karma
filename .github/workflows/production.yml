@@ -54,3 +54,6 @@ jobs :
             --name morlana \
             --resource-group morlana \
             --image ${{ secrets.DOCKER_USERNAME }}/morlana:${{ github.sha }}
+            --registry-login-server docker.io \
+            --registry-username ${{ secrets.DOCKER_USERNAME }} \
+            --registry-password ${{ secrets.DOCKER_PASSWORD }}
