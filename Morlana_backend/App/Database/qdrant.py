@@ -89,9 +89,12 @@ def add_embeddings(
     texts: List[str],
     ids: List[str],
     payloads: List[Dict[str, Any]],
-) -> None:
+) -> int:
     """
     Add embeddings to the Qdrant database.
+
+    Existing point IDs are checked before vectorization so previously ingested
+    posts do not get embedded again.
 
     Args:
         collection_name (str): The name of the Qdrant collection.
@@ -100,24 +103,25 @@ def add_embeddings(
         payloads (List[Dict[str, Any]]): List of payloads associated with each text.
 
     Returns:
-        None
+        int: Number of new embeddings inserted.
     """
-    vectors = [vectorize_text(text) for text in texts]
     points = []
 
-    for id_value, vector, payload in zip(ids, vectors, payloads):
-        # Check if the point ID already exists
+    for id_value, text, payload in zip(ids, texts, payloads):
         existing = CLIENT.retrieve(collection_name=collection_name, ids=[id_value])
 
-        if existing:  # If the list is not empty, the ID exists
+        if existing:
             print(f"ID {id_value} already exists in the collection. Skipping.")
-            return None
+            continue
 
+        vector = vectorize_text(text)
         point = PointStruct(id=id_value, vector=vector, payload=payload)
         points.append(point)
 
     if points:
         CLIENT.upsert(collection_name=collection_name, points=points)
+
+    return len(points)
 
 
 def delete_entries(collection_name: str, ids: List[int]) -> None:
