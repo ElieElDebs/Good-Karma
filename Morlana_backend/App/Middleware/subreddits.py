@@ -17,7 +17,6 @@ def get_subreddits_names(file_path: str = "Configuration/workflow.yaml") -> list
     subreddits_config = config.get("fetch_reddit_posts", {}).get("subreddits", {})
     subreddits = []
 
-
     for subreddit in subreddits_config:
         subreddits.append(list(subreddit.keys())[0])
 

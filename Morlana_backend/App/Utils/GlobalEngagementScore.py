@@ -11,7 +11,7 @@ class DynamicGESCalculator:
     2. F_Lisibilité (Readability): Measures how easy the body text is to read, with an asymmetric penalty for being below the target.
     3. F_Longueur (Length): Assesses the word count of the body, with a logarithmic progression to encourage reaching the target length.
     4. F_Sémantique (Semantic Alignment): Evaluates how semantically close
-         
+
     the draft is to successful posts in the same category, acting as a gatekeeper for the overall score.
     Additionally, a lexical factor (F_Lexical) is calculated based on the presence of frequently used words in successful posts, adding another layer of strategic advice.
 

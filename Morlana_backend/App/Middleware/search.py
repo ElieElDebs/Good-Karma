@@ -167,6 +167,7 @@ def calculcate_posts_kpi_new(
 
     return api_response
 
+
 # TODO: Delete this function
 def _search_similar_posts(
     query: str, top_k: int = 5, subreddits: list = None, min_score: float = None
@@ -234,6 +235,7 @@ def _search_similar_posts(
         df_uns = df_uns[df_uns["score"] >= min_score].reset_index(drop=True)
 
     return df, df_uns
+
 
 # TODO: Delete this function
 def calculcate_posts_kpi(

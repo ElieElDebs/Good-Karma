@@ -35,6 +35,7 @@ def init_reddit_fetcher(
 
     return FETCHER
 
+
 # TODO: Delete this function To Delete, we dont fetch unseccessful posts
 def fetch_unsuccessful_posts(
     threshold_configuration: list[dict] = None,
@@ -354,7 +355,7 @@ def call_fetching_pipeline(treshold_configuration: dict, collection_name: str) -
     print("Best posting times calculated:", best_times)
 
     print("Writing best posting times to file...")
-    write_best_times_to_file(best_times, "best_posting_times.json")
+    write_best_times_to_file(best_times, "./Configuration/best_posting_times.json")
     print("Best posting times written to 'best_posting_times.json'.")
 
     print("Preprocessing posts...")
