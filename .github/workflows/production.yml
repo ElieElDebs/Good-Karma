@@ -48,18 +48,12 @@ jobs :
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Configure Docker Registry Credentials
-        run: |
-          az containerapp registry add \
-            --name morlana \
-            --resource-group morlana \
-            --server docker.io \
-            --username ${{ secrets.DOCKER_USERNAME }} \
-            --password ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Deploy to Azure Container Apps
         run: |
           az containerapp update \
             --name morlana \
             --resource-group morlana \
-            --image ${{ secrets.DOCKER_USERNAME }}/morlana:${{ github.sha }}
+            --image docker.io/${{ secrets.DOCKER_USERNAME }}/morlana:${{ github.sha }} \
+            --registry-server docker.io \
+            --registry-username ${{ secrets.DOCKER_USERNAME }} \
+            --registry-password ${{ secrets.DOCKER_PASSWORD }}
