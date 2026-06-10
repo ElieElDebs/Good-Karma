@@ -25,6 +25,9 @@ app.include_router(subreddits.router)
 
 @app.get("/")
 def read_root():
+    """
+    Main 
+    """
     return {
         "status": 200,
         "message": "Morlana API is running.",
