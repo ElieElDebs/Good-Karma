@@ -4,6 +4,8 @@ on :
   push :
     branches:
       - main
+    paths :
+      - "Morlana_backend/**"
 
 permissions:
   id-token: write
