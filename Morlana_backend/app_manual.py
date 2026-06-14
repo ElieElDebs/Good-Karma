@@ -16,7 +16,7 @@ with open("Configuration/workflow.yaml", "r") as workflow_file:
     workflow_config = yaml.safe_load(workflow_file)
 
 print("Initializing Qdrant and Model...")
-initialize_qdrant()
+initialize_qdrant(host=os.getenv("QDRANT_HOST"), port=os.getenv("QDRANT_PORT"))
 initialize_model()
 create_collection(
     collection_name=os.getenv("QDRANT_COLLECTION_NAME"),
