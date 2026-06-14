@@ -66,18 +66,9 @@ jobs :
             --resource-group morlana \
             --image docker.io/${{ secrets.DOCKER_USERNAME }}/morlana:${{ github.sha }}
 
-      - name: Set Docker Hub Registry Credentials for morlanabackendjob
+      - name: Deploy to Azure Container App Job (morlanabackendjob)
         run: |
-          az containerapp registry set \
-            --name morlanabackendjob \
-            --resource-group morlana \
-            --server docker.io \
-            --username ${{ secrets.DOCKER_USERNAME }} \
-            --password ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Deploy to Azure Container Apps (morlanabackendjob)
-        run: |
-          az containerapp update \
+          az containerapp job update \
             --name morlanabackendjob \
             --resource-group morlana \
             --image docker.io/${{ secrets.DOCKER_USERNAME }}/morlana:${{ github.sha }}
