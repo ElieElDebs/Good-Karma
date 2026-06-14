@@ -13,4 +13,3 @@ node_modules
 Temp/
 Dockerfile
 readme.md
-app_manual.py
