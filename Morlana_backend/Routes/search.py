@@ -62,7 +62,9 @@ def search(
     )
 
     # Get the best time to post for the given subreddits from the json file
-    best_times = get_best_times_to_post(subreddits)
+    best_times = get_best_times_to_post(
+        subreddits, filepath="./Configuration/best_posting_times.json"
+    )
 
     result["best_times_to_post"] = best_times
 

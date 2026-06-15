@@ -26,7 +26,7 @@ app.include_router(subreddits.router)
 @app.get("/")
 def read_root():
     """
-    Main 
+    Main
     """
     return {
         "status": 200,
