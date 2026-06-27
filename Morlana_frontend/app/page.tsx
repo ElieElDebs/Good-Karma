@@ -2,6 +2,10 @@
 import React, { useState, useTransition, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { ActionMeta } from "react-select";
+import ScoreGauge from "./components/ScoreGauge";
+import KpiBar from "./components/KpiBar";
+
+const SpiderChart = dynamic(() => import("./components/SpiderChart"), { ssr: false });
 
 // Utilise le composant Select en dynamique côté client pour éviter le mismatch SSR/hydration
 const Select = dynamic(() => import("react-select"), { ssr: false });
@@ -57,6 +61,97 @@ function Tooltip({ content, children }: { content: React.ReactNode; children: Re
     </span>
   );
 }
+
+
+function SemanticRangeBar({
+  min, avg, max, draftScore,
+}: {
+  min: number; avg: number; max: number; draftScore?: number;
+}) {
+  const scale = (v: number) => `${Math.min(97, Math.max(3, v * 100)).toFixed(1)}%`;
+  const draftPct = draftScore !== undefined ? Math.min(97, Math.max(3, draftScore * 100)) : undefined;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <span style={{ fontSize: 11, fontWeight: 600, color: "var(--color-gray)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+        Relevance Score
+      </span>
+
+      <div style={{ position: "relative", height: 24 }}>
+        {/* Track */}
+        <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 6, transform: "translateY(-50%)", borderRadius: 99, background: "var(--color-bg-input)" }} />
+
+        {/* Community range band */}
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          left: scale(min),
+          width: `${(max - min) * 100}%`,
+          height: 6,
+          transform: "translateY(-50%)",
+          background: "var(--color-orange)",
+          opacity: 0.2,
+          borderRadius: 99,
+        }} />
+
+        {/* Min dot */}
+        <div style={{ position: "absolute", top: "50%", left: scale(min), width: 8, height: 8, borderRadius: "50%", background: "var(--color-orange)", opacity: 0.5, transform: "translate(-50%, -50%)" }} />
+
+        {/* Avg dot (larger, full opacity) */}
+        <div style={{ position: "absolute", top: "50%", left: scale(avg), width: 14, height: 14, borderRadius: "50%", background: "var(--color-orange)", transform: "translate(-50%, -50%)" }} />
+
+        {/* Max dot */}
+        <div style={{ position: "absolute", top: "50%", left: scale(max), width: 8, height: 8, borderRadius: "50%", background: "var(--color-orange)", opacity: 0.5, transform: "translate(-50%, -50%)" }} />
+
+        {/* Draft dot */}
+        {draftPct !== undefined && (
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: `${draftPct}%`,
+            width: 14,
+            height: 14,
+            borderRadius: "50%",
+            background: "var(--color-blue)",
+            border: "2.5px solid var(--color-bg-section)",
+            transform: "translate(-50%, -50%)",
+            boxSizing: "border-box",
+          }} />
+        )}
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}>
+        <span><span style={{ color: "var(--color-orange)", fontWeight: 600 }}>{min.toFixed(2)}</span><span style={{ color: "var(--color-gray)", marginLeft: 3 }}>min</span></span>
+        <span><span style={{ color: "var(--color-orange)", fontWeight: 700 }}>{avg.toFixed(2)}</span><span style={{ color: "var(--color-gray)", marginLeft: 3 }}>avg</span></span>
+        <span><span style={{ color: "var(--color-orange)", fontWeight: 600 }}>{max.toFixed(2)}</span><span style={{ color: "var(--color-gray)", marginLeft: 3 }}>max</span></span>
+        {draftScore !== undefined && (
+          <span><span style={{ color: "var(--color-blue)", fontWeight: 700 }}>{draftScore.toFixed(2)}</span><span style={{ color: "var(--color-gray)", marginLeft: 3 }}>draft</span></span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const titleKpiTooltips: Record<string, React.ReactNode> = {
+  "average_title_length": "Number of characters in the title. Too short and it lacks context; too long and it may get cut off. Compare with the average of top-performing posts in this subreddit.",
+  "average_title_word_count": "Number of words in the title. Titles with too few words feel vague; too many and they become hard to scan at a glance. Aim for the sweet spot this community responds to.",
+  "average_title_question_count": "Number of question marks in the title. Question-based titles invite interaction and tend to generate more comments — but overusing them can feel clickbait-y.",
+  "average_title_exclamation_count": "Number of exclamation points. A touch of enthusiasm grabs attention, but too many can come across as shouting or spam. Check what successful posts in this subreddit do.",
+  "average_title_polarity": "Emotional tone of the title, from -1 (very negative) to +1 (very positive). Some communities respond better to a positive framing, others to a neutral or critical one.",
+  "average_title_subjectivity": "How opinion-based the title is, from 0 (purely factual) to 1 (highly subjective). News subreddits favour factual titles; debate-focused ones expect opinions.",
+  "average_title_uppercase_word_count": "Number of fully ALL-CAPS words. Used sparingly, they emphasise a key term. Overused, they signal shouting and may trigger spam filters.",
+};
+
+const bodyKpiTooltips: Record<string, React.ReactNode> = {
+  "average_word_count": "Total word count of the post body. Too short feels low-effort; too long and readers drop off. Align with the length of posts that performed well here.",
+  "average_sentence_count": "Number of sentences. More sentences means the text is broken into digestible ideas. A high word-to-sentence ratio indicates long, dense sentences.",
+  "average_readability_score": "Flesch Reading Ease score (0–100). Higher = easier to read. Above 60 is accessible to most readers; below 30 is very technical. Match the level your audience expects.",
+  "average_polarity": "Average emotional tone of the body (-1 very negative → +1 very positive). Helps you understand whether this community responds better to positive, neutral, or critical content.",
+  "average_subjectivity": "How opinionated the body is (0 = factual, 1 = fully subjective). Compare your writing style with what resonates in this subreddit.",
+  "average_upvotes": "Average upvotes of similar high-performing posts. This is your engagement benchmark — the score to aim for.",
+  "total_posts_with_links": "Number of reference posts that include an external link. If most do, adding a link may help your post fit the community norm.",
+  "percentage_posts_with_links": "Percentage of reference posts that contain a link. A high rate means links are expected here; a low rate suggests plain-text posts tend to do better.",
+};
 
 // Tooltip contents for each factor
 const factorTooltips: Record<string, React.ReactNode> = {
@@ -302,71 +397,43 @@ export default function Home() {
               <h2 className="text-2xl md:text-3xl font-bold text-orange mb-2">
                 Analysis results for <span className="text-blue">{subreddit}</span>
               </h2>
-              {/* GES Score & Label */}
-              {result.ges_results?.[subreddit]?.GES && (
-                <div
-                  className="flex flex-col md:flex-row items-center gap-6 p-6 rounded-xl"
-                  style={{
-                    background:
-                      getGESColor(result.ges_results[subreddit].GES.label) + "22",
-                  }}
-                >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <span
-                      className="text-4xl font-extrabold"
-                      style={{
-                        color: getGESColor(result.ges_results[subreddit].GES.label),
-                      }}
-                    >
-                      {result.ges_results[subreddit].GES.score?.toFixed(2)}
-                    </span>
-                    <span
-                      className="text-lg font-bold"
-                      style={{
-                        color: getGESColor(result.ges_results[subreddit].GES.label),
-                      }}
-                    >
-                      {result.ges_results[subreddit].GES.label}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <span className="text-base font-semibold text-light">
-                      Factors:
-                    </span>
-                    <div className="flex flex-wrap gap-3">
-                      {result.ges_results[subreddit].GES.factors &&
-                        Object.entries(result.ges_results[subreddit].GES.factors).map(
-                          ([key, value]) => {
-                            const factorLabels: Record<string, string> = {
-                              "F_Titre": "Title",
-                              "F_Lisibilité": "Readability",
-                              "F_Longueur": "Substance",
-                              "F_Sémantique": "Relevance",
-                              "F_Lexical": "Vocabulary",
-                            };
-                            const label = factorLabels[key] || key;
-                            return (
-                              <span
-                                key={key}
-                                className="px-3 py-1 rounded bg-input text-orange font-semibold text-sm flex items-center gap-1"
-                              >
-                                {label}: {String(value)}
-                                <Tooltip content={factorTooltips[key]}>
-                                  <span style={{ marginLeft: 4, cursor: "pointer", display: "inline-flex", alignItems: "center" }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                      <circle cx="12" cy="12" r="10" stroke="var(--color-orange)" strokeWidth="2" fill="var(--color-bg-section)"/>
-                                      <text x="12" y="16" textAnchor="middle" fontSize="13" fill="var(--color-orange)" fontWeight="bold">i</text>
-                                    </svg>
-                                  </span>
-                                </Tooltip>
-                              </span>
-                            );
-                          }
-                        )}
+              {/* GES Score & Factors */}
+              {result.ges_results?.[subreddit]?.GES && (() => {
+                const ges = result.ges_results[subreddit].GES;
+                const gesColor = getGESColor(ges.label);
+                return (
+                  <div
+                    className="flex flex-col md:flex-row p-6 rounded-xl"
+                    style={{ background: gesColor + "18" }}
+                  >
+                    {/* Gauge – colonne gauche */}
+                    <div className="flex flex-col items-center justify-center md:w-[42%] pb-5 md:pb-0 md:pr-6">
+                      <span style={{ fontSize: 11, fontWeight: 600, color: "var(--color-gray)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>
+                        Global Score
+                      </span>
+                      <ScoreGauge
+                        score={ges.score ?? 0}
+                        label={ges.label ?? ""}
+                        color={gesColor}
+                      />
                     </div>
+
+                    {/* Delimiter horizontal (mobile) / vertical (desktop) */}
+                    <div className="block md:hidden w-full h-px mb-5" style={{ background: gesColor + "55" }} />
+                    <div className="hidden md:block w-px self-stretch mx-0" style={{ background: gesColor + "55" }} />
+
+                    {/* Spider chart – colonne droite */}
+                    {ges.factors && (
+                      <div className="flex flex-col md:flex-1 md:pl-6">
+                        <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--color-gray)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>
+                          Score Breakdown
+                        </span>
+                        <SpiderChart factors={ges.factors} color={gesColor} />
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Advice */}
               {result.ges_results?.[subreddit]?.advice && (
@@ -382,58 +449,106 @@ export default function Home() {
                 </div>
               )}
 
-              {/* KPI & Info */}
+              {/* Context: best time + semantic range */}
               {result.kpi_by_subreddit?.[subreddit]?.global_body_kpi && (
-                <div className="flex flex-col gap-4">
-                  {/* Date optimale, score moyen, min/max semantic */}
-                  <div className="flex flex-wrap gap-6 items-center justify-center">
-                    <div className="flex flex-col items-center bg-section border border-orange rounded-xl px-5 py-4 shadow min-w-[220px]">
-                      <span className="text-xs font-semibold text-gray mb-1 flex items-center gap-2 justify-center">
-                        <svg className="w-5 h-5 text-orange" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
-                        Best time to post
-                      </span>
-                      {renderBestTimeToPost(subreddit)}
-                    </div>
-                    {/* Semantic Score Min */}
-                    <div className="flex flex-col items-center bg-section border border-green rounded-xl px-5 py-4 shadow min-w-[180px]">
-                      <span className="text-xs font-semibold text-gray mb-1 flex items-center gap-2 justify-center">
-                        <svg className="w-5 h-5 text-green" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path d="M12 4v16" />
-                        </svg>
-                        Min Semantic Score
-                      </span>
-                      <span className="text-lg font-bold text-green text-center">
-                        {result.kpi_by_subreddit[subreddit].global_body_kpi.scores.min_score?.toFixed(3)}
-                      </span>
-                    </div>
-                    {/* Average Semantic Score */}
-                    <div className="flex flex-col items-center bg-section border border-orange rounded-xl px-5 py-4 shadow min-w-[180px]">
-                      <span className="text-xs font-semibold text-gray mb-1 flex items-center gap-2 justify-center">
-                        <svg className="w-5 h-5 text-orange" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" /></svg>
-                        Avg. relevance score
-                      </span>
-                      <span className="text-lg font-bold text-orange text-center">
-                        {result.kpi_by_subreddit[subreddit].global_body_kpi.scores.average_score?.toFixed(2)}
-                      </span>
-                    </div>
-                    {/* Semantic Score Max */}
-                    <div className="flex flex-col items-center bg-section border border-yellow rounded-xl px-5 py-4 shadow min-w-[180px]">
-                      <span className="text-xs font-semibold text-gray mb-1 flex items-center gap-2 justify-center">
-                        <svg className="w-5 h-5 text-yellow" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path d="M12 4v16" />
-                        </svg>
-                        Max Semantic Score
-                      </span>
-                      <span className="text-lg font-bold text-yellow text-center">
-                        {result.kpi_by_subreddit[subreddit].global_body_kpi.scores.max_score?.toFixed(3)}
-                      </span>
-                    </div>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {/* Best time to post */}
+                  <div className="flex flex-col items-center bg-section border border-orange rounded-xl px-5 py-4 shadow min-w-[180px]">
+                    <span className="text-xs font-semibold text-gray mb-1 flex items-center gap-2 justify-center">
+                      <svg className="w-4 h-4 text-orange" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                      Best time to post
+                    </span>
+                    {renderBestTimeToPost(subreddit)}
                   </div>
-                  {/* Mots les plus utilisés */}
-                  <div className="flex flex-wrap gap-8">
-                    <div>
-                      <strong className="text-orange">Most used words in similar posts :</strong>
-                      <ul className="flex flex-wrap gap-2 mt-1">
+
+                  {/* Semantic range bar */}
+                  {result.kpi_by_subreddit[subreddit].global_body_kpi.scores && (
+                    <div className="flex-1 bg-section border border-border rounded-xl px-5 py-4 shadow">
+                      <SemanticRangeBar
+                        min={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.min_score ?? 0}
+                        avg={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.average_score ?? 0}
+                        max={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.max_score ?? 0}
+                        draftScore={result.draft_post_kpi?.body_kpi?.scores?.average_score}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Title KPI Comparison */}
+              {result.kpi_by_subreddit?.[subreddit]?.global_title_kpi && (
+                <div className="w-full bg-section rounded-xl px-5 py-4 shadow flex flex-col gap-2 border border-border">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="text-base font-bold text-orange">Title KPIs</h4>
+                    <span className="flex items-center gap-1 text-xs text-gray">
+                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "var(--color-orange)" }} /> Posts
+                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "var(--color-blue)", marginLeft: 8 }} /> Draft
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 divide-y divide-[var(--color-border)]">
+                    {[
+                      { key: "average_title_length", label: "Title Length" },
+                      { key: "average_title_word_count", label: "Word Count" },
+                      { key: "average_title_question_count", label: "Questions" },
+                      { key: "average_title_exclamation_count", label: "Exclamations" },
+                      { key: "average_title_polarity", label: "Polarity", min: -1, max: 1, fmt: (v: number) => v.toFixed(2) },
+                      { key: "average_title_subjectivity", label: "Subjectivity", min: 0, max: 1, fmt: (v: number) => v.toFixed(2) },
+                      { key: "average_title_uppercase_word_count", label: "Uppercase Words" },
+                    ].map(({ key, label, min, max, fmt }) => (
+                      <KpiBar
+                        key={key}
+                        label={label}
+                        postsValue={result.kpi_by_subreddit[subreddit].global_title_kpi[key]}
+                        draftValue={result.draft_post_kpi?.title_kpi?.[key]}
+                        min={min}
+                        max={max}
+                        format={fmt}
+                        tooltip={titleKpiTooltips[key]}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Body KPI Comparison */}
+              {result.kpi_by_subreddit?.[subreddit]?.global_body_kpi && (
+                <div className="w-full bg-section rounded-xl px-5 py-4 shadow flex flex-col gap-2 border border-border">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="text-base font-bold text-orange">Body KPIs</h4>
+                    <span className="flex items-center gap-1 text-xs text-gray">
+                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "var(--color-orange)" }} /> Posts
+                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "var(--color-blue)", marginLeft: 8 }} /> Draft
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 divide-y divide-[var(--color-border)]">
+                    {[
+                      { key: "average_word_count", label: "Word Count", section: "words_and_sentences", fmt: (v: number) => Math.round(v).toString() },
+                      { key: "average_sentence_count", label: "Sentence Count", section: "words_and_sentences", fmt: (v: number) => Math.round(v).toString() },
+                      { key: "average_readability_score", label: "Readability", section: "polarity_and_readability_subjectivity", min: 0, max: 100, fmt: (v: number) => v.toFixed(1) },
+                      { key: "average_polarity", label: "Polarity", section: "polarity_and_readability_subjectivity", min: -1, max: 1, fmt: (v: number) => v.toFixed(2) },
+                      { key: "average_subjectivity", label: "Subjectivity", section: "polarity_and_readability_subjectivity", min: 0, max: 1, fmt: (v: number) => v.toFixed(2) },
+                      { key: "average_upvotes", label: "Avg. Upvotes", section: "scores", fmt: (v: number) => Math.round(v).toString() },
+                      { key: "total_posts_with_links", label: "Posts with Links", section: "links_and_time", fmt: (v: number) => Math.round(v).toString() },
+                      { key: "percentage_posts_with_links", label: "Links (%)", section: "links_and_time", min: 0, max: 100, fmt: (v: number) => v.toFixed(0) + "%" },
+                    ].map(({ key, label, section, min, max, fmt }) => (
+                      <KpiBar
+                        key={key}
+                        label={label}
+                        postsValue={result.kpi_by_subreddit[subreddit].global_body_kpi[section]?.[key]}
+                        draftValue={result.draft_post_kpi?.body_kpi?.[section]?.[key]}
+                        min={min}
+                        max={max}
+                        format={fmt}
+                        tooltip={bodyKpiTooltips[key]}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Most used words */}
+                  {result.kpi_by_subreddit[subreddit].global_body_kpi.words_and_sentences?.most_used_words && (
+                    <div className="pt-2 border-t border-[var(--color-border)] mt-1">
+                      <strong className="text-orange text-sm">Most used words in similar posts:</strong>
+                      <ul className="flex flex-wrap gap-2 mt-2">
                         {result.kpi_by_subreddit[subreddit].global_body_kpi.words_and_sentences.most_used_words.map(
                           ([word, count]: [string, number]) => (
                             <li key={word} className="bg-input px-2 py-1 rounded text-light text-sm">
@@ -443,81 +558,7 @@ export default function Home() {
                         )}
                       </ul>
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* KPI Titres - Comparaison */}
-              {result.kpi_by_subreddit?.[subreddit]?.global_title_kpi && (
-                <div className="w-full bg-section rounded-xl p-4 shadow flex flex-col gap-6 border border-border">
-                  <h4 className="text-lg font-bold text-orange mb-2">Title KPIs</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {[
-                      { key: "average_title_length", label: "Avg. Title Length" },
-                      { key: "average_title_word_count", label: "Avg. Title Word Count" },
-                      { key: "average_title_question_count", label: "Avg. Questions" },
-                      { key: "average_title_exclamation_count", label: "Avg. Exclamations" },
-                      { key: "average_title_polarity", label: "Avg. Polarity" },
-                      { key: "average_title_subjectivity", label: "Avg. Subjectivity" },
-                      { key: "average_title_uppercase_word_count", label: "Avg. Uppercase Words" }
-                    ].map(({ key, label }) => (
-                      <div key={key} className="flex flex-col bg-card rounded-lg px-4 py-4 shadow border border-input items-center">
-                        <span className="text-xs text-light font-semibold mb-2">{label}</span>
-                        <div className="flex flex-row gap-2 items-end w-full justify-center">
-                          <div className="flex flex-col items-center flex-1">
-                            <span className="text-2xl text-orange font-extrabold leading-tight">
-                              {result.kpi_by_subreddit[subreddit].global_title_kpi[key]}
-                            </span>
-                            <span className="text-xs text-gray">Posts</span>
-                          </div>
-                          <div className="flex flex-col items-center flex-1 border-l border-input pl-2">
-                            <span className="text-2xl text-blue font-extrabold leading-tight">
-                              {result.draft_post_kpi?.title_kpi[key]}
-                            </span>
-                            <span className="text-xs text-gray">Draft</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* KPI Body - Comparaison */}
-              {result.kpi_by_subreddit?.[subreddit]?.global_body_kpi && (
-                <div className="w-full bg-section rounded-xl p-4 shadow flex flex-col gap-6 border border-border">
-                  <h4 className="text-lg font-bold text-orange mb-2">Body KPIs</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {[
-                      { key: "average_word_count", label: "Avg. Word Count", section: "words_and_sentences" },
-                      { key: "average_sentence_count", label: "Avg. Sentence Count", section: "words_and_sentences" },
-                      { key: "average_readability_score", label: "Avg. Readability", section: "polarity_and_readability_subjectivity" },
-                      { key: "average_polarity", label: "Avg. Polarity", section: "polarity_and_readability_subjectivity" },
-                      { key: "average_subjectivity", label: "Avg. Subjectivity", section: "polarity_and_readability_subjectivity" },
-                      { key: "average_score", label: "Avg. Score", section: "scores" },
-                      { key: "average_upvotes", label: "Avg. Upvotes", section: "scores" },
-                      { key: "total_posts_with_links", label: "Posts with Links", section: "links_and_time" },
-                      { key: "percentage_posts_with_links", label: "Links (%)", section: "links_and_time" }
-                    ].map(({ key, label, section }) => (
-                      <div key={key} className="flex flex-col bg-card rounded-lg px-4 py-4 shadow border border-input items-center">
-                        <span className="text-xs text-light font-semibold mb-2">{label}</span>
-                        <div className="flex flex-row gap-2 items-end w-full justify-center">
-                          <div className="flex flex-col items-center flex-1">
-                            <span className="text-2xl text-orange font-extrabold leading-tight">
-                              {result.kpi_by_subreddit[subreddit].global_body_kpi[section]?.[key]}
-                            </span>
-                            <span className="text-xs text-gray">Posts</span>
-                          </div>
-                          <div className="flex flex-col items-center flex-1 border-l border-input pl-2">
-                            <span className="text-2xl text-blue font-extrabold leading-tight">
-                              {result.draft_post_kpi?.body_kpi[section]?.[key]}
-                            </span>
-                            <span className="text-xs text-gray">Draft</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  )}
                 </div>
               )}
 
