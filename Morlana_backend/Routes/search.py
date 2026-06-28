@@ -1,16 +1,17 @@
 import os
-import pandas as pd
 
 import numpy as np
-from fastapi import APIRouter, Query
+import pandas as pd
+from fastapi import APIRouter, Query, Security
 
 from App.Middleware.search import calculcate_posts_kpi_new
+from App.Utils.security import get_api_key
 from App.Utils.utils import get_best_times_to_post
 
 router = APIRouter()
 
 
-@router.get("/search")
+@router.get("/search", dependencies=[Security(get_api_key)])
 def search(
     title: str,
     body: str,

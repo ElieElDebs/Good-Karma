@@ -2,13 +2,13 @@
 This script handles posts fetching from Reddit and adding their embeddings to the Qdrant database.
 """
 
-import pandas as pd
 import os
+
+import pandas as pd
 
 from App.Database.qdrant import add_embeddings
 from App.Utils.Reddit import RedditFetcher
 from App.Utils.utils import convert_to_uuids, preprocess_text
-
 
 FETCHER = None
 

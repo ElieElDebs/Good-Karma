@@ -2,14 +2,13 @@
 This scripts handles all the function to calculate poste KPI.
 """
 
+import datetime
 import re
 from collections import Counter
-from nltk.corpus import stopwords
 
 import pandas as pd
+from nltk.corpus import stopwords
 from textblob import TextBlob
-
-import datetime
 
 from App.Utils.GlobalEngagementScore import DynamicGESCalculator
 from App.Utils.GlobalEngagementScoreNew import GlobalEngagementScoreNew

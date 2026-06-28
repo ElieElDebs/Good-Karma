@@ -1,12 +1,11 @@
-import yaml
 import os
 
+import yaml
 from dotenv import load_dotenv
 
-from App.Scripts.post_fetching import init_reddit_fetcher, call_fetching_pipeline
-
 # Init Qdrant
-from App.Database.qdrant import initialize_qdrant, initialize_model, create_collection
+from App.Database.qdrant import create_collection, initialize_model, initialize_qdrant
+from App.Scripts.post_fetching import call_fetching_pipeline, init_reddit_fetcher
 
 # Load .env file for environment variables
 load_dotenv("Configuration/.env")

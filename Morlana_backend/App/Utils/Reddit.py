@@ -1,5 +1,6 @@
-import praw
 import time
+
+import praw
 
 
 class RedditFetcher:

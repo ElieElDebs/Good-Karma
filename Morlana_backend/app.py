@@ -1,11 +1,11 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Security
+from fastapi.security import APIKeyHeader
 
 import App.Database.qdrant as qdrant
-from Routes import search
-from Routes import subreddits
+from Routes import search, subreddits
 
 print("Loading environment variables...")
 load_dotenv("./Configuration/.env")
@@ -31,5 +31,5 @@ def read_root():
     return {
         "status": 200,
         "message": "Morlana API is running.",
-        "version": {"api": "0.2.2", "name": "Morlana", "developer": "ArduiPie"},
+        "version": {"api": "0.6.2", "name": "Morlana", "developer": "ArduiPie"},
     }
