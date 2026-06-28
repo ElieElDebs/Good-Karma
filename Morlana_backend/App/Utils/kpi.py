@@ -378,7 +378,7 @@ def calculate_titles_kpi(
     )
 
     # Get title most used words
-    most_used_words = get_most_used_words(copied_dataframe, text_column)
+    most_used_words = get_most_used_words(copied_dataframe, text_column, 7)
 
     # Get title number of questions
     copied_dataframe["title_question_count"] = copied_dataframe[text_column].apply(

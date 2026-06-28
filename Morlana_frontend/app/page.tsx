@@ -507,6 +507,22 @@ export default function Home() {
                       />
                     ))}
                   </div>
+
+                  {/* Most used words in titles */}
+                  {result.kpi_by_subreddit[subreddit].global_title_kpi.most_used_title_words && (
+                    <div className="pt-2 border-t border-[var(--color-border)] mt-1">
+                      <strong className="text-orange text-sm">Most used words in similar titles:</strong>
+                      <ul className="flex flex-wrap gap-2 mt-2">
+                        {result.kpi_by_subreddit[subreddit].global_title_kpi.most_used_title_words.map(
+                          ([word, count]: [string, number]) => (
+                            <li key={word} className="bg-input px-2 py-1 rounded text-light text-sm">
+                              {word} <span className="text-orange">({count})</span>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
 
