@@ -11,7 +11,10 @@ export async function GET(req: NextRequest) {
   });
   subreddits.forEach((s) => params.append("subreddits", s));
   const url = `${process.env.NEXT_PUBLIC_API_URL}search?${params.toString()}`;
-  const apiRes = await fetch(url, { method: "GET" });
+  const apiRes = await fetch(url, {
+    method: "GET",
+    headers: { "X-API-KEY": process.env.API_KEY ?? "" },
+  });
   if (!apiRes.ok) {
     return NextResponse.json({ error: "Erreur API" }, { status: 500 });
   }

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Security
 
 from App.Middleware.subreddits import get_subreddits_names
-from Morlana_backend.App.Utils.security import get_api_key
+from App.Utils.security import get_api_key
 
 router = APIRouter()
 
