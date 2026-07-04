@@ -8,15 +8,15 @@
 	<table>
 		<tr>
 			<td align="center">
-				<img src="images/good_karma_page_1.jpeg" alt="Screenshot page 1 - Overview" width="250" /><br/>
+				<img src="images/good_karma_page_1.png" alt="Screenshot page 1 - Overview" width="250" /><br/>
 				<i>Application overview</i>
 			</td>
 			<td align="center">
-				<img src="images/good_karma_page_2.jpeg" alt="Screenshot page 2 - Post analysis" width="250" /><br/>
+				<img src="images/good_karma_page_2.png" alt="Screenshot page 2 - Post analysis" width="250" /><br/>
 				<i>Reddit post analysis</i>
 			</td>
 			<td align="center">
-				<img src="images/good_karma_page_3.jpeg" alt="Screenshot page 3 - Advice and KPIs" width="250" /><br/>
+				<img src="images/good_karma_page_3.png" alt="Screenshot page 3 - Advice and KPIs" width="250" /><br/>
 				<i>Advice & KPIs</i>
 			</td>
 		</tr>
