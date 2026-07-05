@@ -1,14 +1,16 @@
 import os
-
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Security
-from fastapi.security import APIKeyHeader
+
+print("Loading environment variables...")
+loaded = load_dotenv("./Configuration/.env")
+
+if loaded == False:
+    print("ERROR : Environnement variables has not been loaded succesffuly ! ")
+
+from fastapi import FastAPI
 
 import App.Database.qdrant as qdrant
 from Routes import search, subreddits
-
-print("Loading environment variables...")
-load_dotenv("./Configuration/.env")
 
 print("Initializing Qdrant and Model...")
 qdrant.initialize_qdrant(
