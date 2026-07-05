@@ -24,7 +24,12 @@ def initialize_qdrant(host: str = "localhost", port: int = 6333) -> None:
     global CLIENT
 
     if CLIENT is None:
-        CLIENT = QdrantClient(host=host, port=port)
+        try:
+            CLIENT = QdrantClient(host=host, port=port)
+
+        except Exception as e:
+            print("ERROR : While configuring Qdrant Client")
+            print(e)
 
 
 def create_collection(
@@ -68,7 +73,11 @@ def initialize_model(model_name: str = "all-mpnet-base-v2") -> None:
     global MODEL
 
     if MODEL is None:
-        MODEL = SentenceTransformer(model_name)
+        try:
+            MODEL = SentenceTransformer(model_name)
+        except Exception as e:
+            print("ERROR : While initializing Sentence Transformers !")
+            print(e)
 
 
 def vectorize_text(text: str) -> List[float]:
@@ -108,7 +117,11 @@ def add_embeddings(
     points = []
 
     for id_value, text, payload in zip(ids, texts, payloads):
-        existing = CLIENT.retrieve(collection_name=collection_name, ids=[id_value])
+        try:
+            existing = CLIENT.retrieve(collection_name=collection_name, ids=[id_value])
+        except Exception as e:
+            print("ERROR : While trying to retrieve  Collection in Qdrant collection !")
+            print(e)
 
         if existing:
             print(f"ID {id_value} already exists in the collection. Skipping.")
@@ -119,7 +132,11 @@ def add_embeddings(
         points.append(point)
 
     if points:
-        CLIENT.upsert(collection_name=collection_name, points=points)
+        try:
+            CLIENT.upsert(collection_name=collection_name, points=points)
+        except Exception as e:
+            print("ERROR : While inserting data in the collection Qdrant")
+            print(e)
 
     return len(points)
 
@@ -135,7 +152,11 @@ def delete_entries(collection_name: str, ids: List[int]) -> None:
     Returns:
         None
     """
-    CLIENT.delete(collection_name=collection_name, points_selector={"points": ids})
+    try:
+        CLIENT.delete(collection_name=collection_name, points_selector={"points": ids})
+    except Exception as e:
+        print("ERROR : While trying to delete entry in a Qdrant collection")
+        print(e)
 
 
 def search_embeddings(
@@ -154,11 +175,18 @@ def search_embeddings(
         List[Dict[str, Any]]: List of search results with payloads and scores.
     """
     query_vector = vectorize_text(query)
-    results = CLIENT.search(
-        collection_name=collection_name,
-        query_vector=query_vector,
-        limit=top_k,
-        query_filter=filter,
-    )
+
+    try:
+        results = CLIENT.search(
+            collection_name=collection_name,
+            query_vector=query_vector,
+            limit=top_k,
+            query_filter=filter,
+        )
+    except Exception as e:
+        print(
+            f"ERROR : While retrieving data from Collection {collection_name} with filters {filter}"
+        )
+        print(e)
 
     return [{"payload": r.payload, "score": r.score} for r in results]
