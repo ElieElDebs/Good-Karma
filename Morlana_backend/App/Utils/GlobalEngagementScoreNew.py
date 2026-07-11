@@ -471,8 +471,8 @@ class GlobalEngagementScoreNew:
 
     def calculate_global_score(
         self,
-        title_weight: float = 0.4,
-        body_weight: float = 0.4,
+        title_weight: float = 0.5,
+        body_weight: float = 0.3,
         substance_weight: float = 0.2,
     ) -> dict[str, float]:
         """
@@ -501,10 +501,17 @@ class GlobalEngagementScoreNew:
             substance_weight /= total_weight
 
         # STEP 1 : CALCULATE TITLE FEATURES SCORE
-        title_score, advice_list = self.__calculate_title_features_scores()
+        title_score, advice_list = self.__calculate_title_features_scores(
+            polarity_weight=0.3, subjectivity_weight=0.3, title_length_weight=0.4
+        )
 
         # STEP 2 : CALCULATE BODY FEATURES SCORE
-        body_score, body_advice_list = self.__calculate_body_features_scores()
+        body_score, body_advice_list = self.__calculate_body_features_scores(
+            polarity_weight=0.3,
+            readability_weight=0.3,
+            subjectivity_weight=0.2,
+            body_length_weight=0.2,
+        )
 
         # STEP 3 : CALCULATE SUBSTANCE FEATURES SCORE
         substance_score, substance_advice_list = (
@@ -541,7 +548,8 @@ class GlobalEngagementScoreNew:
         )
 
         # STEP 6 : APPLY SEMANTIC SCORE AS A MULTIPLIER
-        global_score = (semantic_score**1.25) * (combined_score) * 10
+        # global_score = (semantic_score**1.25) * (combined_score) * 10
+        global_score = (semantic_score**0.95) * (combined_score) * 10
         global_score = np.clip(global_score, 0, 100)
         global_score = round(global_score, 2)
 
