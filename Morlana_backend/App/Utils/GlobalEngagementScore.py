@@ -36,9 +36,9 @@ class DynamicGESCalculator:
             raise ValueError(
                 "La structure de données JSON est incorrecte. Les clés 'data', 'draft_post' ou 'successful_posts' sont manquantes."
             )
-        except Exception as e :
-            print ("ERROR : While init class DGes")
-            print (e)
+        except Exception as e:
+            print("ERROR : While init class DGes")
+            print(e)
 
         # CONSTANT
         self.S_MIN = 0.7  # Seuil minimal de similarité pour F_Sémantique.

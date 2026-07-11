@@ -25,6 +25,20 @@ function getGESColor(label: string) {
   }
 }
 
+function getSemanticConfidenceColor(score: number) {
+  if (score < 30) return "var(--color-danger)";
+  if (score < 50) return "var(--color-warning)";
+  if (score < 70) return "var(--color-primary)";
+  return "var(--color-success)";
+}
+
+function getSemanticConfidenceLabel(score: number) {
+  if (score < 30) return "Poor";
+  if (score < 50) return "Fair";
+  if (score < 70) return "Good";
+  return "Excellent";
+}
+
 // Tooltip component
 function Tooltip({ content, children }: { content: React.ReactNode; children: React.ReactNode }) {
   const [visible, setVisible] = useState(false);
@@ -163,7 +177,7 @@ const factorTooltips: Record<string, React.ReactNode> = {
   ),
   "body_score": (
     <>
-      <strong>Bordy Score</strong><br />
+      <strong>Body Score</strong><br />
       Analyzes your text's complexity using the Flesch Reading Ease index. The score is optimal if your text is as simple or more accessible than successful posts; it only decreases if your writing is too complex for the audience.
     </>
   ),
@@ -175,8 +189,8 @@ const factorTooltips: Record<string, React.ReactNode> = {
   ),
   "semantic_score": (
     <>
-      <strong>Semantic</strong><br />
-      Calculates semantic similarity between your topic and historically successful themes. This factor acts as a "gatekeeper": if alignment is below 0.7, it warns of a high risk of being off-topic.
+      <strong>Semantic Component</strong><br />
+      Measures how closely your topic aligns with historically successful themes. This is separate from the Semantic Alignment score above—it's one input to the Structure Score calculation.
     </>
   )
 };
@@ -272,14 +286,17 @@ export default function Home() {
       <section className="w-full max-w-7xl bg-card shadow-xl rounded-2xl px-4 md:px-8 py-4 md:py-8 flex flex-col gap-2 border border-border mb-2">
         <h1 className="text-3xl md:text-4xl font-extrabold text-orange mb-1">Good Karma</h1>
         <p className="text-light text-base md:text-lg">
-          Good Karma helps you optimize your Reddit posts for maximum engagement and visibility. 
-          Enter your post draft and instantly compare its key metrics (KPIs) with successful posts from the community. 
+          Good Karma helps you optimize your Reddit posts for maximum engagement and visibility.
+          Enter your post draft and instantly compare its key metrics (KPIs) with successful posts from the community.
           The tool analyzes your title and body, provides actionable advice, and highlights the most relevant keywords.
           <br /><br />
-          <span className="font-semibold text-orange">Global Score:</span> 
-          This score summarizes the overall quality and potential of your post based on readability, length, semantics, and title impact.
+          <span className="font-semibold text-orange">Structure Score:</span>
+          This score evaluates the quality and potential of your post based on title impact, readability, word count, and substance.
           <br />
-          <span className="font-semibold">Score scale:</span> 
+          <span className="font-semibold text-orange">Semantic Alignment:</span>
+          This score measures how well your topic aligns with successful posts in the community (0–100%).
+          <br />
+          <span className="font-semibold">Score scale:</span>
           <span className="ml-2">Bad (≤ 45) | Medium (≤ 65) | Good (≤ 85) | Really Good (&gt; 85)</span>
           <br />
           Use Good Karma to quickly see how your draft compares, understand what works, and improve your chances of success on Reddit.
@@ -397,41 +414,108 @@ export default function Home() {
               <h2 className="text-2xl md:text-3xl font-bold text-orange mb-2">
                 Analysis results for <span className="text-blue">{subreddit}</span>
               </h2>
-              {/* GES Score & Factors */}
+              {/* Structure Score & Semantic Confidence */}
               {result.ges_results?.[subreddit]?.GES && (() => {
                 const ges = result.ges_results[subreddit].GES;
                 const gesColor = getGESColor(ges.label);
+                const semanticConfidence = ges.semantic_confidence ?? 0;
+                const semanticColor = getSemanticConfidenceColor(semanticConfidence);
+                const semanticLabel = getSemanticConfidenceLabel(semanticConfidence);
+
                 return (
-                  <div
-                    className="flex flex-col md:flex-row p-6 rounded-xl"
-                    style={{ background: gesColor + "18" }}
-                  >
-                    {/* Gauge – colonne gauche */}
-                    <div className="flex flex-col items-center justify-center md:w-[42%] pb-5 md:pb-0 md:pr-6">
-                      <span style={{ fontSize: 11, fontWeight: 600, color: "var(--color-gray)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>
-                        Global Score
-                      </span>
-                      <ScoreGauge
-                        score={ges.score ?? 0}
-                        label={ges.label ?? ""}
-                        color={gesColor}
-                      />
-                    </div>
-
-                    {/* Delimiter horizontal (mobile) / vertical (desktop) */}
-                    <div className="block md:hidden w-full h-px mb-5" style={{ background: gesColor + "55" }} />
-                    <div className="hidden md:block w-px self-stretch mx-0" style={{ background: gesColor + "55" }} />
-
-                    {/* Spider chart – colonne droite */}
-                    {ges.factors && (
-                      <div className="flex flex-col md:flex-1 md:pl-6">
-                        <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--color-gray)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>
-                          Score Breakdown
-                        </span>
-                        <SpiderChart factors={ges.factors} color={gesColor} />
+                  <>
+                    {/* Three-column score cards with flex-wrap */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Structure Score Card */}
+                      <div
+                        className="flex flex-col p-6 rounded-xl"
+                        style={{ background: gesColor + "18" }}
+                      >
+                        <div className="flex flex-col items-center justify-center h-full">
+                          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--color-gray)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>
+                            Structure Score
+                          </span>
+                          <ScoreGauge
+                            score={ges.score ?? 0}
+                            label={ges.label ?? ""}
+                            color={gesColor}
+                          />
+                          <p style={{ fontSize: 12, color: "var(--color-light)", marginTop: 12, textAlign: "center", fontStyle: "italic" }}>
+                            Measures title, body, and substance quality
+                          </p>
+                        </div>
                       </div>
-                    )}
-                  </div>
+
+                      {/* Semantic Confidence Card */}
+                      <div
+                        className="flex flex-col p-6 rounded-xl"
+                        style={{ background: semanticColor + "18" }}
+                      >
+                        <div className="flex flex-col items-center justify-center h-full">
+                          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--color-gray)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>
+                            Semantic Alignment
+                          </span>
+                          <div style={{ position: "relative", width: 160, height: 160, marginBottom: 16 }}>
+                            <svg viewBox="0 0 160 160" style={{ width: "100%", height: "100%" }}>
+                              {/* Background circle */}
+                              <circle cx="80" cy="80" r="75" fill="none" stroke="var(--color-bg-input)" strokeWidth="8" />
+                              {/* Progress circle */}
+                              <circle
+                                cx="80"
+                                cy="80"
+                                r="75"
+                                fill="none"
+                                stroke={semanticColor}
+                                strokeWidth="8"
+                                strokeDasharray={`${(semanticConfidence / 100) * 471} 471`}
+                                strokeLinecap="round"
+                                style={{ transformOrigin: "80px 80px", transform: "rotate(-90deg)", transition: "stroke-dasharray 0.6s ease" }}
+                              />
+                            </svg>
+                            <div style={{
+                              position: "absolute",
+                              top: "50%",
+                              left: "50%",
+                              transform: "translate(-50%, -50%)",
+                              textAlign: "center"
+                            }}>
+                              <div style={{
+                                fontSize: 32,
+                                fontWeight: 700,
+                                color: semanticColor
+                              }}>
+                                {semanticConfidence.toFixed(0)}%
+                              </div>
+                              <div style={{
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: "var(--color-gray)",
+                                marginTop: 4,
+                                textTransform: "uppercase"
+                              }}>
+                                {semanticLabel}
+                              </div>
+                            </div>
+                          </div>
+                          <p style={{ fontSize: 12, color: "var(--color-light)", marginTop: 12, textAlign: "center", fontStyle: "italic" }}>
+                            How aligned with successful topics here
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Spider chart – same level as scores */}
+                      {ges.factors && (
+                        <div className="flex flex-col p-6 rounded-xl" style={{ background: gesColor + "18" }}>
+                          <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--color-gray)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>
+                            Score Breakdown
+                          </span>
+                          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <SpiderChart factors={ges.factors} color={gesColor} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 );
               })()}
 

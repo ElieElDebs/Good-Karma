@@ -4,6 +4,7 @@ based on the new criteria established in 2026.
 """
 
 import numpy as np
+import math
 
 
 class GlobalEngagementScoreNew:
@@ -126,8 +127,8 @@ class GlobalEngagementScoreNew:
 
         # STEP 2: Proximity score with realistic ranges
         max_length_range = max(target_length, draft_length, 10)
-        max_polarity_range = 2.0  # polarité entre -1 et 1
-        max_subjectivity_range = 1.0  # subjectivité entre 0 et 1
+        max_polarity_range = 2.0  # polarity between -1 et 1
+        max_subjectivity_range = 1.0  # subjectivity between 0 et 1
 
         length_score = self.proximity_score(
             draft_length, target_length, max_length_range
@@ -528,9 +529,6 @@ class GlobalEngagementScoreNew:
         features_dict["substance_score"] = round(
             substance_score, 2
         )  # Score between 0 and 10
-        features_dict["semantic_score"] = round(
-            semantic_score, 2
-        )  # Score between 0 and 1
 
         # STEP 5 : COMBINE ALL FEATURE SCORES WITH THEIR RESPECTIVE WEIGHTS
         combined_score: float = (
@@ -549,11 +547,22 @@ class GlobalEngagementScoreNew:
 
         # STEP 6 : APPLY SEMANTIC SCORE AS A MULTIPLIER
         # global_score = (semantic_score**1.25) * (combined_score) * 10
-        global_score = (semantic_score**0.95) * (combined_score) * 10
+        # global_score = (semantic_score**0.95) * (combined_score) * 10
+        global_score = (combined_score) * 10
         global_score = np.clip(global_score, 0, 100)
         global_score = round(global_score, 2)
 
         label: str = ""
+
+        # STEP 7 : CONVERT SEMANTIC SCORE TO CONFIDENCE SCORE (%)
+        try:
+            semantic_confidence = round(
+                (math.pi - math.acos(semantic_score)) * 100 / math.pi
+            )
+        except Exception as e:
+            print("MATH ERROR : Error while calculating semantic confidence")
+            print(e)
+            semantic_confidence = 0
 
         # --- Attribution du Label ---
         if global_score <= 45:
@@ -570,5 +579,8 @@ class GlobalEngagementScoreNew:
             "label": label,
             "factors": features_dict,
             "semantic_similarity_avg": semantic_score,
+            "semantic_confidence": (
+                semantic_confidence if semantic_confidence is not None else 0
+            ),
             "advices": all_advices,
         }
