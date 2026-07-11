@@ -52,7 +52,7 @@ function ChartTooltip({
         {item.payload?.subject}:{" "}
       </span>
       <span style={{ color: item.stroke, fontWeight: 700 }}>
-        {item.value}/100
+        {item.value}/10
       </span>
     </div>
   );
@@ -61,15 +61,15 @@ function ChartTooltip({
 export default function SpiderChart({ factors, color }: SpiderChartProps) {
   const data = Object.entries(factors).map(([key, value]) => ({
     subject: FACTOR_LABELS[key] ?? key,
-    value: Math.round(Math.min(100, value > 1 ? value : value * 100)),
-    fullMark: 100,
+    value: Math.round(Math.min(10, value > 1 ? value : value * 10)),
+    fullMark: 10,
   }));
 
   return (
     <ResponsiveContainer width="100%" height={240}>
       <RadarChart outerRadius="62%" data={data}>
         <PolarGrid stroke="#444851" strokeDasharray="3 3" />
-        <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+        <PolarRadiusAxis domain={[0, 10]} tick={false} axisLine={false} />
         <PolarAngleAxis
           dataKey="subject"
           tick={{ fill: "#bcbfc4", fontSize: 12, fontWeight: 500 }}
