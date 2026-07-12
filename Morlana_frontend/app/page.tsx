@@ -162,7 +162,6 @@ const bodyKpiTooltips: Record<string, React.ReactNode> = {
   "average_readability_score": "Flesch Reading Ease score (0–100). Higher = easier to read. Above 60 is accessible to most readers; below 30 is very technical. Match the level your audience expects.",
   "average_polarity": "Average emotional tone of the body (-1 very negative → +1 very positive). Helps you understand whether this community responds better to positive, neutral, or critical content.",
   "average_subjectivity": "How opinionated the body is (0 = factual, 1 = fully subjective). Compare your writing style with what resonates in this subreddit.",
-  "average_upvotes": "Average upvotes of similar high-performing posts. This is your engagement benchmark — the score to aim for.",
   "total_posts_with_links": "Number of reference posts that include an external link. If most do, adding a link may help your post fit the community norm.",
   "percentage_posts_with_links": "Percentage of reference posts that contain a link. A high rate means links are expected here; a low rate suggests plain-text posts tend to do better.",
 };
@@ -627,7 +626,6 @@ export default function Home() {
                       { key: "average_readability_score", label: "Readability", section: "polarity_and_readability_subjectivity", min: 0, max: 100, fmt: (v: number) => v.toFixed(1) },
                       { key: "average_polarity", label: "Polarity", section: "polarity_and_readability_subjectivity", min: -1, max: 1, fmt: (v: number) => v.toFixed(2) },
                       { key: "average_subjectivity", label: "Subjectivity", section: "polarity_and_readability_subjectivity", min: 0, max: 1, fmt: (v: number) => v.toFixed(2) },
-                      { key: "average_upvotes", label: "Avg. Upvotes", section: "scores", fmt: (v: number) => Math.round(v).toString() },
                       { key: "total_posts_with_links", label: "Posts with Links", section: "links_and_time", fmt: (v: number) => Math.round(v).toString() },
                       { key: "percentage_posts_with_links", label: "Links (%)", section: "links_and_time", min: 0, max: 100, fmt: (v: number) => v.toFixed(0) + "%" },
                     ].map(({ key, label, section, min, max, fmt }) => (
@@ -693,7 +691,7 @@ export default function Home() {
                   </div>
                   <div
                     style={{
-                      maxHeight: showPosts[subreddit] ? "2000px" : "0px",
+                      maxHeight: showPosts[subreddit] ? "5000px" : "0px",
                       overflow: "hidden",
                       transition: "max-height 0.4s cubic-bezier(.4,0,.2,1)"
                     }}

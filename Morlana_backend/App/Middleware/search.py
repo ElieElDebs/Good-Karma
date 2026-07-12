@@ -6,7 +6,6 @@ from qdrant_client.http.models import FieldCondition, Filter, MatchValue
 import App.Database.qdrant as qdrant
 from App.Utils.kpi import (
     calculate_body_kpi,
-    calculate_GES,
     calculate_GES_new,
     calculate_titles_kpi,
 )

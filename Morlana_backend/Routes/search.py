@@ -57,7 +57,7 @@ def search(
     result = calculcate_posts_kpi_new(
         title=title,
         body=body,
-        top_k=10,
+        top_k=20,
         subreddits=subreddits,
         min_score=os.getenv("MIN_SCORE", None),
     )

@@ -177,7 +177,8 @@ class GlobalEngagementScoreNew:
         STEP 1: Retrieve target and draft values for body features.
         STEP 2: Calculate proximity scores for each feature using realistic ranges and logarithmic scaling for length and readability.
         STEP 3: Weighted combination and normalization.
-        STEP 4: Return score between 0 and 10.
+        STEP 4: Apply minimum length viability penalty (< 100 words gets progressive penalty, < 50 words = 0).
+        STEP 5: Return score between 0 and 10.
         """
 
         # STEP 1: Retrieve target and draft values
@@ -239,10 +240,20 @@ class GlobalEngagementScoreNew:
             + (subjectivity_score * subjectivity_weight)
             + (readability_score * readability_weight)
         )
-        # STEP 4: Scale to 0-10 and return
+
+        # STEP 4: Apply minimum length penalty
+        # Posts below 50 words are not viable, apply progressive penalty
+        if draft_length < 50:
+            combined_score = 0.0
+        elif draft_length < 100:
+            # Progressive penalty: at 50 words = 0%, at 100 words = 100% of score
+            penalty_factor = draft_length / 100
+            combined_score *= penalty_factor
+
+        # STEP 5: Scale to 0-10 and return
         body_score = np.clip(combined_score * 10, 0, 10)
 
-        # Step 5: Generate advice
+        # Step 6: Generate advice
         advice_list = self.generate_body_advice(
             target_length,
             draft_length,
