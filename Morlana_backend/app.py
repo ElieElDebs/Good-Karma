@@ -10,7 +10,7 @@ if loaded == False:
 from fastapi import FastAPI
 
 import App.Database.qdrant as qdrant
-from Routes import search, subreddits
+from Routes import search, subreddits, post
 
 print("Initializing Qdrant and Model...")
 qdrant.initialize_qdrant(
@@ -23,6 +23,7 @@ app = FastAPI()
 
 app.include_router(search.router)
 app.include_router(subreddits.router)
+app.include_router(post.router)
 
 
 @app.get("/")
