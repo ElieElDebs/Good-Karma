@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { ActionMeta } from "react-select";
 import ScoreGauge from "./components/ScoreGauge";
 import KpiBar from "./components/KpiBar";
+import RewriteModal from "./components/RewriteModal";
 
 const SpiderChart = dynamic(() => import("./components/SpiderChart"), { ssr: false });
 
@@ -203,6 +204,11 @@ export default function Home() {
   const [error, setError] = useState("");
   const [subredditOptions, setSubredditOptions] = useState<{ value: string; label: string }[]>([]);
   const [showPosts, setShowPosts] = useState<{ [subreddit: string]: boolean }>({});
+  const [isRewriting, setIsRewriting] = useState<{ [subreddit: string]: boolean }>({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalRewriteResult, setModalRewriteResult] = useState<string | null>(null);
+  const [modalSubreddit, setModalSubreddit] = useState("");
+  const [isModalLoading, setIsModalLoading] = useState(false);
 
   // Fetch subreddits from API on mount
   useEffect(() => {
@@ -264,6 +270,97 @@ export default function Home() {
       ...prev,
       [subreddit]: !prev[subreddit]
     }));
+  }
+
+  async function handleRewrite(subreddit: string) {
+    if (!result || !title || !content) {
+      setError("Please ensure your post has a title and content.");
+      return;
+    }
+
+    setIsRewriting(prev => ({ ...prev, [subreddit]: true }));
+    setError("");
+    setIsModalOpen(true);
+    setModalSubreddit(subreddit);
+    setIsModalLoading(true);
+    setModalRewriteResult(null);
+
+    try {
+      const gesData = result.ges_results?.[subreddit];
+      const kpiData = result.kpi_by_subreddit?.[subreddit];
+      const posts = result.posts_by_subreddit?.[subreddit];
+
+      if (!gesData || !kpiData) {
+        throw new Error("Missing analysis data for this subreddit");
+      }
+
+      // Format advices as string
+      const advicesStr = gesData.advice?.join(" | ") || "";
+
+      // Format examples as JSON string
+      const examplesStr = posts ? JSON.stringify(posts.slice(0, 3)) : "[]";
+
+      // Format words to use
+      const wordsStr = kpiData.global_body_kpi?.words_and_sentences?.most_used_words
+        ? kpiData.global_body_kpi.words_and_sentences.most_used_words.slice(0, 5).map((w: [string, number]) => w[0]).join(", ")
+        : "";
+
+      // Format ideal title length
+      const titleLength = kpiData.global_title_kpi?.median_title_length?.toString() || "50";
+
+      // Build weakness and strength from GES factors
+      const factors = gesData.GES?.factors || {};
+      const weaknessAndStrength = JSON.stringify({
+        title_score: factors.title_score,
+        body_score: factors.body_score,
+        substance_score: factors.substance_score,
+        semantic_confidence: gesData.GES?.semantic_confidence || 0
+      });
+
+      // Call the rewrite endpoint with POST
+      const res = await fetch(`/api/rewrite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subreddit: subreddit,
+          draft_title: title,
+          draft_body: content,
+          weakness_and_strength: weaknessAndStrength,
+          advices: advicesStr,
+          examples: examplesStr,
+          ideal_title_length: titleLength,
+          ideal_words_to_use: wordsStr
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      // Display the rewritten content in modal
+      if (data.status === 200 && (data.data?.result || (data.data?.title && data.data?.body))) {
+        // If backend returns parsed JSON with title and body
+        if (data.data?.title && data.data?.body) {
+          setModalRewriteResult(JSON.stringify({
+            title: data.data.title,
+            body: data.data.body
+          }));
+        } else if (data.data?.result) {
+          // Fallback if backend returns result as string
+          setModalRewriteResult(data.data.result);
+        }
+      } else {
+        throw new Error("No result from rewrite endpoint");
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      setError(`Error rewriting post: ${errorMsg}`);
+      setModalRewriteResult(`Error: ${errorMsg}`);
+    } finally {
+      setIsRewriting(prev => ({ ...prev, [subreddit]: false }));
+      setIsModalLoading(false);
+    }
   }
 
   // Helper pour afficher le meilleur moment à poster
@@ -410,9 +507,18 @@ export default function Home() {
               key={subreddit}
               className="w-full max-w-7xl bg-card shadow-2xl rounded-2xl px-4 md:px-10 py-6 md:py-10 flex flex-col gap-8 border border-border mt-2 animate-fade-in"
             >
-              <h2 className="text-2xl md:text-3xl font-bold text-orange mb-2">
-                Analysis results for <span className="text-blue">{subreddit}</span>
-              </h2>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-orange mb-2">
+                  Analysis results for <span className="text-blue">{subreddit}</span>
+                </h2>
+                <button
+                  onClick={() => handleRewrite(subreddit)}
+                  disabled={isRewriting[subreddit]}
+                  className="bg-blue hover:bg-blue/90 text-white font-semibold px-6 py-2 rounded-lg shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-blue/50 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {isRewriting[subreddit] ? "Rewriting..." : "✨ Rewrite Post"}
+                </button>
+              </div>
               {/* Structure Score & Semantic Confidence */}
               {result.ges_results?.[subreddit]?.GES && (() => {
                 const ges = result.ges_results[subreddit].GES;
@@ -741,6 +847,32 @@ export default function Home() {
           ))}
         </>
       )}
+
+      {/* Rewrite Modal */}
+      <RewriteModal
+        isOpen={isModalOpen}
+        isLoading={isModalLoading}
+        subreddit={modalSubreddit}
+        rewriteResult={modalRewriteResult}
+        onClose={() => {
+          setIsModalOpen(false);
+          setModalRewriteResult(null);
+          setModalSubreddit("");
+        }}
+        onAccept={(result) => {
+          // Result is now an object with title and body
+          if (result.title) {
+            setTitle(result.title);
+          }
+          if (result.body) {
+            setContent(result.body);
+          }
+
+          setIsModalOpen(false);
+          setModalRewriteResult(null);
+          setModalSubreddit("");
+        }}
+      />
     </main>
   );
 }
