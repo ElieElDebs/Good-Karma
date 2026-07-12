@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { ActionMeta } from "react-select";
 import ScoreGauge from "./components/ScoreGauge";
 import KpiBar from "./components/KpiBar";
+import RewriteModal from "./components/RewriteModal";
 
 const SpiderChart = dynamic(() => import("./components/SpiderChart"), { ssr: false });
 
@@ -204,6 +205,10 @@ export default function Home() {
   const [subredditOptions, setSubredditOptions] = useState<{ value: string; label: string }[]>([]);
   const [showPosts, setShowPosts] = useState<{ [subreddit: string]: boolean }>({});
   const [isRewriting, setIsRewriting] = useState<{ [subreddit: string]: boolean }>({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalRewriteResult, setModalRewriteResult] = useState<string | null>(null);
+  const [modalSubreddit, setModalSubreddit] = useState("");
+  const [isModalLoading, setIsModalLoading] = useState(false);
 
   // Fetch subreddits from API on mount
   useEffect(() => {
@@ -275,6 +280,10 @@ export default function Home() {
 
     setIsRewriting(prev => ({ ...prev, [subreddit]: true }));
     setError("");
+    setIsModalOpen(true);
+    setModalSubreddit(subreddit);
+    setIsModalLoading(true);
+    setModalRewriteResult(null);
 
     try {
       const gesData = result.ges_results?.[subreddit];
@@ -308,37 +317,49 @@ export default function Home() {
         semantic_confidence: gesData.GES?.semantic_confidence || 0
       });
 
-      // Call the rewrite endpoint
-      const params = new URLSearchParams({
-        subreddit: subreddit,
-        draft_title: title,
-        draft_body: content,
-        weakness_and_strength: weaknessAndStrength,
-        advices: advicesStr,
-        examples: examplesStr,
-        ideal_title_length: titleLength,
-        ideal_words_to_use: wordsStr
-      });
-
-      const res = await fetch(`/api/rewrite?${params.toString()}`, {
-        method: "GET",
+      // Call the rewrite endpoint with POST
+      const res = await fetch(`/api/rewrite`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-        }
+        },
+        body: JSON.stringify({
+          subreddit: subreddit,
+          draft_title: title,
+          draft_body: content,
+          weakness_and_strength: weaknessAndStrength,
+          advices: advicesStr,
+          examples: examplesStr,
+          ideal_title_length: titleLength,
+          ideal_words_to_use: wordsStr
+        })
       });
 
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      // Show success message with the prompt
-      if (data.status === 200 && data.data?.prompt) {
-        alert("Rewrite suggestion generated! The prompt has been sent to the backend API.");
-        console.log("Rewrite prompt sent to backend:", data.data.prompt);
+      // Display the rewritten content in modal
+      if (data.status === 200 && (data.data?.result || (data.data?.title && data.data?.body))) {
+        // If backend returns parsed JSON with title and body
+        if (data.data?.title && data.data?.body) {
+          setModalRewriteResult(JSON.stringify({
+            title: data.data.title,
+            body: data.data.body
+          }));
+        } else if (data.data?.result) {
+          // Fallback if backend returns result as string
+          setModalRewriteResult(data.data.result);
+        }
+      } else {
+        throw new Error("No result from rewrite endpoint");
       }
     } catch (err) {
-      setError(`Error rewriting post: ${err instanceof Error ? err.message : "Unknown error"}`);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      setError(`Error rewriting post: ${errorMsg}`);
+      setModalRewriteResult(`Error: ${errorMsg}`);
     } finally {
       setIsRewriting(prev => ({ ...prev, [subreddit]: false }));
+      setIsModalLoading(false);
     }
   }
 
@@ -826,6 +847,32 @@ export default function Home() {
           ))}
         </>
       )}
+
+      {/* Rewrite Modal */}
+      <RewriteModal
+        isOpen={isModalOpen}
+        isLoading={isModalLoading}
+        subreddit={modalSubreddit}
+        rewriteResult={modalRewriteResult}
+        onClose={() => {
+          setIsModalOpen(false);
+          setModalRewriteResult(null);
+          setModalSubreddit("");
+        }}
+        onAccept={(result) => {
+          // Result is now an object with title and body
+          if (result.title) {
+            setTitle(result.title);
+          }
+          if (result.body) {
+            setContent(result.body);
+          }
+
+          setIsModalOpen(false);
+          setModalRewriteResult(null);
+          setModalSubreddit("");
+        }}
+      />
     </main>
   );
 }

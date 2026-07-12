@@ -1,39 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-
-  const subreddit = searchParams.get("subreddit") || "";
-  const draft_title = searchParams.get("draft_title") || "";
-  const draft_body = searchParams.get("draft_body") || "";
-  const weakness_and_strength = searchParams.get("weakness_and_strength") || "";
-  const advices = searchParams.get("advices") || "";
-  const examples = searchParams.get("examples") || "";
-  const ideal_title_length = searchParams.get("ideal_title_length") || "";
-  const ideal_words_to_use = searchParams.get("ideal_words_to_use") || "";
-
-  const params = new URLSearchParams({
-    subreddit,
-    draft_title,
-    draft_body,
-    weakness_and_strength,
-    advices,
-    examples,
-    ideal_title_length,
-    ideal_words_to_use,
-  });
-
-  const url = `${process.env.NEXT_PUBLIC_API_URL}rewrite?${params.toString()}`;
-
+export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL}rewrite`;
+
     const apiRes = await fetch(url, {
-      method: "GET",
-      headers: { "X-API-KEY": process.env.API_KEY ?? "" },
+      method: "POST",
+      headers: {
+        "X-API-KEY": process.env.API_KEY ?? "",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
     });
 
     if (!apiRes.ok) {
+      const errorData = await apiRes.text();
+      console.error(`Backend error: ${apiRes.status} - ${errorData}`);
       return NextResponse.json(
-        { error: "Erreur API backend" },
+        { error: `Backend API error: ${apiRes.statusText}` },
         { status: apiRes.status }
       );
     }
@@ -41,6 +27,7 @@ export async function GET(req: NextRequest) {
     const data = await apiRes.json();
     return NextResponse.json(data);
   } catch (error) {
+    console.error("Rewrite API error:", error);
     return NextResponse.json(
       { error: "Erreur lors de la connexion à l'API" },
       { status: 500 }

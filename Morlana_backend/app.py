@@ -10,6 +10,7 @@ if loaded == False:
 from fastapi import FastAPI
 
 import App.Database.qdrant as qdrant
+from App.Utils.llm import init_client
 from Routes import search, subreddits, post
 
 print("Initializing Qdrant and Model...")
@@ -18,6 +19,10 @@ qdrant.initialize_qdrant(
 )
 qdrant.initialize_model()
 print("Qdrant and Model initialized.")
+
+print("Init Gen AI Model ....")
+init_client()
+print("Gen AI model Successfully Loaded")
 
 app = FastAPI()
 
