@@ -556,9 +556,7 @@ class GlobalEngagementScoreNew:
 
         # STEP 7 : CONVERT SEMANTIC SCORE TO CONFIDENCE SCORE (%)
         try:
-            semantic_confidence = round(
-                (math.pi - math.acos(semantic_score)) * 100 / math.pi
-            )
+            semantic_confidence = round(semantic_score * 100)
         except Exception as e:
             print("MATH ERROR : Error while calculating semantic confidence")
             print(e)
