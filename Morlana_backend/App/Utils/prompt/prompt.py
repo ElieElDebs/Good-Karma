@@ -19,17 +19,19 @@ Body: {draft_body}
 ### EXEMPLARY POSTS (To study):
 {examples}
 
-### SUCCESS PATTERNS for r/{subreddit}:
-- Ideal title length: {ideal_title_length}
-- Popular keywords: {ideal_words_to_use}
+### Words to use if it's possible in the title :
+- Popular keywords: {ideal_words_to_use_title}
+
+### Words to use if it's possible in the body :
+- Popular keywords: {ideal_words_to_use_body}
+
 
 IMPORTANT TASK:
 1. Improve the title: bring its length, polarity (emotional tone) and subjectivity closer to the target TITLE METRICS above
 2. Improve the body while keeping the main message: bring its length, polarity, subjectivity and readability closer to the target BODY METRICS above, and make it clearer
-3. Naturally incorporate popular keywords
-4. Keep the post's tone authentic and engaging
+3. Naturally incorporate popular keywords when it's possible.
+4. Follow the guideline of the community : {community_guidelines}
 
 RETURN ONLY valid JSON in this exact format, with no other text. You must also write in the same language as the current post's body and title:
 {{"title": "new title here", "body": "new content here"}}
-
-Do not add any text before or after the JSON. No explanations, no comments. ONLY THE JSON."""
+"""

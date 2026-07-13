@@ -295,19 +295,25 @@ export default function Home() {
         throw new Error("Missing analysis data for this subreddit");
       }
 
+      // String advices
+      const guidelines = "";
+
       // Format advices as string
       const advicesStr = gesData.advice?.join(" | ") || "";
 
       // Format examples as JSON string
-      const examplesStr = posts ? JSON.stringify(posts.slice(0, 3)) : "[]";
+      const examplesStr = posts ? JSON.stringify(posts.slice(0, 4)) : "[]";
 
       // Format words to use
-      const wordsStr = kpiData.global_body_kpi?.words_and_sentences?.most_used_words
+      const wordsStr = kpiData.most_used_title_words?.words_and_sentences?.most_used_words
         ? kpiData.global_body_kpi.words_and_sentences.most_used_words.slice(0, 5).map((w: [string, number]) => w[0]).join(", ")
         : "";
 
+      // Format Title words to use
+      const wordsStrTitle = kpiData.global_title_kpi.most_used_title_words.slice(0, 5).map((w: [string, number]) => w[0]).join(", ")
+
       // Format ideal title length
-      const titleLength = kpiData.global_title_kpi?.median_title_length?.toString() || "50";
+      //const titleLength = kpiData.global_title_kpi?.average_title_length?.toString() || "50";
 
       // Build weakness and strength from GES factors
       const factors = gesData.GES?.factors || {};
@@ -370,8 +376,9 @@ export default function Home() {
           body_metrics: bodyMetrics,
           advices: advicesStr,
           examples: examplesStr,
-          ideal_title_length: titleLength,
-          ideal_words_to_use: wordsStr
+          ideal_words_to_use_title: wordsStr,
+          ideal_words_to_use_body: wordsStrTitle,
+          community_guidelines : guidelines
         })
       });
 

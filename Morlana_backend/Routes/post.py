@@ -18,8 +18,9 @@ class RewriteRequest(BaseModel):
     body_metrics: str
     advices: str
     examples: str
-    ideal_title_length: str
-    ideal_words_to_use: str
+    ideal_words_to_use_title: str
+    ideal_words_to_use_body: str
+    community_guidelines: str
 
 
 @router.post("/rewrite", dependencies=[Security(get_api_key)])
@@ -52,8 +53,9 @@ def rewrite_post(request: RewriteRequest):
         advices=request.advices,
         examples=request.examples,
         subreddit=request.subreddit,
-        ideal_title_length=request.ideal_title_length,
-        ideal_words_to_use=request.ideal_words_to_use,
+        ideal_words_to_use_title=request.ideal_words_to_use_title,
+        ideal_words_to_use_body=request.ideal_words_to_use_body,
+        community_guidelines=request.community_guidelines,
     )
 
     response = ask_model(query=prompt)
