@@ -14,6 +14,8 @@ class RewriteRequest(BaseModel):
     draft_title: str
     draft_body: str
     weakness_and_strength: str
+    title_metrics: str
+    body_metrics: str
     advices: str
     examples: str
     ideal_title_length: str
@@ -30,6 +32,8 @@ def rewrite_post(request: RewriteRequest):
     - draft_title: current post title
     - draft_body: current post body
     - weakness_and_strength: JSON string with GES scores
+    - title_metrics: JSON string with draft vs. target title metrics (length, polarity, subjectivity)
+    - body_metrics: JSON string with draft vs. target body metrics (length, polarity, subjectivity, readability)
     - advices: pipe-separated improvement suggestions
     - examples: JSON string with reference posts
     - ideal_title_length: recommended title length
@@ -43,6 +47,8 @@ def rewrite_post(request: RewriteRequest):
         draft_title=request.draft_title,
         draft_body=request.draft_body,
         weakness_and_strength=request.weakness_and_strength,
+        title_metrics=request.title_metrics,
+        body_metrics=request.body_metrics,
         advices=request.advices,
         examples=request.examples,
         subreddit=request.subreddit,

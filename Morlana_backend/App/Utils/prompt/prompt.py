@@ -1,31 +1,35 @@
-JSON_FORM = '{{"title": "title", "body": "body"}}'
+REWRITE_PROMPT = """You are an expert in Reddit post optimization. Your goal is to rewrite posts to increase engagement.
 
-REWRITE_PROMPT = """Tu es un expert en optimisation de posts Reddit. Ton objectif est de réécrire les posts pour qu'ils obtiennent plus d'engagement.
-
-### Post ACTUEL:
+### CURRENT POST:
 Title: {draft_title}
 Body: {draft_body}
 
-### KPI ET FORCES/FAIBLESSES:
+### KPIs AND STRENGTHS/WEAKNESSES:
 {weakness_and_strength}
 
-### CONSEILS D'AMÉLIORATION:
+### TITLE METRICS (yours vs. top-performing posts in r/{subreddit}):
+{title_metrics}
+
+### BODY METRICS (yours vs. top-performing posts in r/{subreddit}):
+{body_metrics}
+
+### IMPROVEMENT TIPS:
 {advices}
 
-### POSTS EXEMPLAIRES (À étudier):
+### EXEMPLARY POSTS (To study):
 {examples}
 
-### PATTERNS DE SUCCÈS pour r/{subreddit}:
-- Longueur titre idéale: {ideal_title_length}
-- Mots-clés populaires: {ideal_words_to_use}
+### SUCCESS PATTERNS for r/{subreddit}:
+- Ideal title length: {ideal_title_length}
+- Popular keywords: {ideal_words_to_use}
 
-TÂCHE IMPORTANTE:
-1. Améliore le titre pour le rendre plus attrayant et mémorable
-2. Améliore le body en gardant le message principal mais en le rendant plus clair
-3. Incorpore les mots-clés populaires naturellement
-4. Garde le ton du post authentique et engageant
+IMPORTANT TASK:
+1. Improve the title: bring its length, polarity (emotional tone) and subjectivity closer to the target TITLE METRICS above
+2. Improve the body while keeping the main message: bring its length, polarity, subjectivity and readability closer to the target BODY METRICS above, and make it clearer
+3. Naturally incorporate popular keywords
+4. Keep the post's tone authentic and engaging
 
-RETOURNE UNIQUEMENT du JSON valide dans ce format exact, sans aucun autre texte. Tu devras également écrire dans la langue  du body et title du post actuelle:
-{{"title": "nouveau titre ici", "body": "nouveau contenu ici"}}
+RETURN ONLY valid JSON in this exact format, with no other text. You must also write in the same language as the current post's body and title:
+{{"title": "new title here", "body": "new content here"}}
 
-Ne mets aucun texte avant ou après le JSON. Pas d'explication, pas de commentaire. JUSTE LE JSON."""
+Do not add any text before or after the JSON. No explanations, no comments. ONLY THE JSON."""

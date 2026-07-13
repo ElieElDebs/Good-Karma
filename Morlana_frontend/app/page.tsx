@@ -288,6 +288,7 @@ export default function Home() {
     try {
       const gesData = result.ges_results?.[subreddit];
       const kpiData = result.kpi_by_subreddit?.[subreddit];
+      const draftKpi = result.draft_post_kpi;
       const posts = result.posts_by_subreddit?.[subreddit];
 
       if (!gesData || !kpiData) {
@@ -317,6 +318,43 @@ export default function Home() {
         semantic_confidence: gesData.GES?.semantic_confidence || 0
       });
 
+      // Build title metrics (draft vs. target) so polarity/subjectivity/length
+      // are actually available to the rewrite prompt
+      const titleMetrics = JSON.stringify({
+        length: {
+          draft: draftKpi?.title_kpi?.average_title_length ?? null,
+          target: kpiData.global_title_kpi?.average_title_length ?? null,
+        },
+        polarity: {
+          draft: draftKpi?.title_kpi?.average_title_polarity ?? null,
+          target: kpiData.global_title_kpi?.average_title_polarity ?? null,
+        },
+        subjectivity: {
+          draft: draftKpi?.title_kpi?.average_title_subjectivity ?? null,
+          target: kpiData.global_title_kpi?.average_title_subjectivity ?? null,
+        },
+      });
+
+      // Build body metrics (draft vs. target)
+      const bodyMetrics = JSON.stringify({
+        length: {
+          draft: draftKpi?.body_kpi?.words_and_sentences?.average_word_count ?? null,
+          target: kpiData.global_body_kpi?.words_and_sentences?.average_word_count ?? null,
+        },
+        polarity: {
+          draft: draftKpi?.body_kpi?.polarity_and_readability_subjectivity?.average_polarity ?? null,
+          target: kpiData.global_body_kpi?.polarity_and_readability_subjectivity?.average_polarity ?? null,
+        },
+        subjectivity: {
+          draft: draftKpi?.body_kpi?.polarity_and_readability_subjectivity?.average_subjectivity ?? null,
+          target: kpiData.global_body_kpi?.polarity_and_readability_subjectivity?.average_subjectivity ?? null,
+        },
+        readability: {
+          draft: draftKpi?.body_kpi?.polarity_and_readability_subjectivity?.average_readability_score ?? null,
+          target: kpiData.global_body_kpi?.polarity_and_readability_subjectivity?.average_readability_score ?? null,
+        },
+      });
+
       // Call the rewrite endpoint with POST
       const res = await fetch(`/api/rewrite`, {
         method: "POST",
@@ -328,6 +366,8 @@ export default function Home() {
           draft_title: title,
           draft_body: content,
           weakness_and_strength: weaknessAndStrength,
+          title_metrics: titleMetrics,
+          body_metrics: bodyMetrics,
           advices: advicesStr,
           examples: examplesStr,
           ideal_title_length: titleLength,
