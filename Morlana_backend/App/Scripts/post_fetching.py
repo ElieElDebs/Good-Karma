@@ -191,19 +191,42 @@ def fetch_top_posts(threshold_configuration: list[dict] = None) -> pd.DataFrame:
     return pd.DataFrame(all_posts)
 
 
-def calculate_best_date_to_post(posts: pd.DataFrame) -> list[dict[str, str]]:
+def calculate_best_date_to_post(posts: pd.DataFrame) -> dict:
     """
-    Analyzes the posting times of the given posts to determine the best date and time to post,
-    based on historical engagement data for each subreddit present in the posts DataFrame.
+    Analyzes the posting times of posts to determine the best day and hour to post for each day of the week.
+    Returns comprehensive engagement statistics for each day and subreddit.
 
     Args:
-        posts (pd.DataFrame): DataFrame containing the posts data, including 'subreddit', 'date', 'nb_upvote', and 'nb_comment' columns.
+        posts (pd.DataFrame): DataFrame containing posts data with 'subreddit', 'date', 'nb_upvote', 'nb_comment'.
 
     Returns:
-        list[dict[str, str]]: List of dictionaries containing the best posting times per subreddit.
+        dict: Structure with best posting times for each day:
+              {
+                "subreddit": {
+                  "best_overall_day": "Tuesday",
+                  "best_overall_hour": 20,
+                  "average_engagement": {"upvotes": 3000, "comments": 350},
+                  "weekly_schedule": {
+                    "Monday": {
+                      "best_hour": 14,
+                      "avg_upvotes": 2400,
+                      "avg_comments": 290,
+                      "engagement_score": 2690
+                    },
+                    ...
+                  }
+                }
+              }
     """
-
-    # Step 1: Group posts by subreddit and calculate average engagement metrics for each time slot
+    days_order = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
     best_times = dict()
 
     for subreddit, group in posts.groupby("subreddit"):
@@ -217,19 +240,52 @@ def calculate_best_date_to_post(posts: pd.DataFrame) -> list[dict[str, str]]:
             .reset_index()
         )
 
-        # Step 2: Identify the time slot with the highest average engagement
-        engagement_by_time["total_engagement"] = (
+        engagement_by_time["engagement_score"] = (
             engagement_by_time["nb_upvote"] + engagement_by_time["nb_comment"]
         )
-        best_time = engagement_by_time.loc[
-            engagement_by_time["total_engagement"].idxmax()
+
+        # Find overall best time slot
+        best_overall = engagement_by_time.loc[
+            engagement_by_time["engagement_score"].idxmax()
         ]
 
+        # Calculate best hour for each day of week
+        weekly_schedule = {}
+        for day in days_order:
+            day_data = engagement_by_time[engagement_by_time["day_of_week"] == day]
+
+            if len(day_data) > 0:
+                best_hour_idx = day_data["engagement_score"].idxmax()
+                best_hour_row = day_data.loc[best_hour_idx]
+
+                weekly_schedule[day] = {
+                    "best_hour": int(best_hour_row["hour"]),
+                    "avg_upvotes": round(float(best_hour_row["nb_upvote"]), 2),
+                    "avg_comments": round(float(best_hour_row["nb_comment"]), 2),
+                    "engagement_score": round(
+                        float(best_hour_row["engagement_score"]), 2
+                    ),
+                }
+            else:
+                weekly_schedule[day] = {
+                    "best_hour": None,
+                    "avg_upvotes": 0,
+                    "avg_comments": 0,
+                    "engagement_score": 0,
+                }
+
+        # Calculate overall average engagement
+        avg_upvotes_overall = round(float(group["nb_upvote"].mean()), 2)
+        avg_comments_overall = round(float(group["nb_comment"].mean()), 2)
+
         best_times[subreddit] = {
-            "best_day": best_time["day_of_week"],
-            "best_hour": int(best_time["hour"]),
-            "average_upvotes": best_time["nb_upvote"],
-            "average_comments": best_time["nb_comment"],
+            "best_overall_day": str(best_overall["day_of_week"]),
+            "best_overall_hour": int(best_overall["hour"]),
+            "average_engagement": {
+                "upvotes": avg_upvotes_overall,
+                "comments": avg_comments_overall,
+            },
+            "weekly_schedule": weekly_schedule,
         }
 
     return best_times

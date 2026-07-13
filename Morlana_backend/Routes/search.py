@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, Security
 
 from App.Middleware.search import calculcate_posts_kpi_new
 from App.Utils.security import get_api_key
-from App.Utils.utils import get_best_times_to_post
+from App.Utils.utils import get_best_times_to_post, get_weekly_posting_calendar
 
 router = APIRouter()
 
@@ -67,6 +67,12 @@ def search(
         subreddits, filepath="./Configuration/best_posting_times.json"
     )
 
+    # Get weekly posting calendar for the given subreddits
+    weekly_calendar = get_weekly_posting_calendar(
+        subreddits, filepath="./Configuration/best_posting_times.json"
+    )
+
     result["best_times_to_post"] = best_times
+    result["weekly_posting_calendar"] = weekly_calendar
 
     return {"status": 200, "data": convert(result)}

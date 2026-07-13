@@ -5,6 +5,7 @@ import { ActionMeta } from "react-select";
 import ScoreGauge from "./components/ScoreGauge";
 import KpiBar from "./components/KpiBar";
 import RewriteModal from "./components/RewriteModal";
+import WeeklyPostingCalendar from "./components/WeeklyPostingCalendar";
 
 const SpiderChart = dynamic(() => import("./components/SpiderChart"), { ssr: false });
 
@@ -417,7 +418,7 @@ export default function Home() {
     return (
       <div className="flex flex-col items-center">
         <span className="text-lg font-bold text-orange text-center">
-          {bestTimes.best_day} at {bestTimes.best_hour}:00
+          {bestTimes.best_overall_day} at {bestTimes.best_overall_hour}:00
         </span>
       </div>
     );
@@ -687,26 +688,35 @@ export default function Home() {
 
               {/* Context: best time + semantic range */}
               {result.kpi_by_subreddit?.[subreddit]?.global_body_kpi && (
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {/* Best time to post */}
-                  <div className="flex flex-col items-center bg-section border border-orange rounded-xl px-5 py-4 shadow min-w-[180px]">
-                    <span className="text-xs font-semibold text-gray mb-1 flex items-center gap-2 justify-center">
-                      <svg className="w-4 h-4 text-orange" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
-                      Best time to post
-                    </span>
-                    {renderBestTimeToPost(subreddit)}
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Best time to post */}
+                    <div className="flex flex-col items-center bg-section border border-orange rounded-xl px-5 py-4 shadow min-w-[180px]">
+                      <span className="text-xs font-semibold text-gray mb-1 flex items-center gap-2 justify-center">
+                        <svg className="w-4 h-4 text-orange" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                        Best time to post
+                      </span>
+                      {renderBestTimeToPost(subreddit)}
+                    </div>
+
+                    {/* Semantic range bar */}
+                    {result.kpi_by_subreddit[subreddit].global_body_kpi.scores && (
+                      <div className="flex-1 bg-section border border-border rounded-xl px-5 py-4 shadow">
+                        <SemanticRangeBar
+                          min={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.min_score ?? 0}
+                          avg={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.average_score ?? 0}
+                          max={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.max_score ?? 0}
+                          draftScore={result.draft_post_kpi?.body_kpi?.scores?.average_score}
+                        />
+                      </div>
+                    )}
                   </div>
 
-                  {/* Semantic range bar */}
-                  {result.kpi_by_subreddit[subreddit].global_body_kpi.scores && (
-                    <div className="flex-1 bg-section border border-border rounded-xl px-5 py-4 shadow">
-                      <SemanticRangeBar
-                        min={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.min_score ?? 0}
-                        avg={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.average_score ?? 0}
-                        max={result.kpi_by_subreddit[subreddit].global_body_kpi.scores.max_score ?? 0}
-                        draftScore={result.draft_post_kpi?.body_kpi?.scores?.average_score}
-                      />
-                    </div>
+                  {/* Weekly Posting Calendar */}
+                  {result.weekly_posting_calendar?.[subreddit] && (
+                    <WeeklyPostingCalendar
+                      data={result.weekly_posting_calendar[subreddit]}
+                    />
                   )}
                 </div>
               )}

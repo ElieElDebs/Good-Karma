@@ -30,6 +30,91 @@ def get_best_times_to_post(
     return best_times_dict
 
 
+def get_weekly_posting_calendar(
+    subreddits: list[str], filepath: str = "best_posting_times.json"
+) -> dict:
+    """
+    Generate a weekly posting calendar using real engagement data from the new JSON structure.
+    Each day shows the best posting hour and estimated engagement metrics.
+
+    Args:
+        subreddits (list[str]): List of subreddits to get calendar for.
+        filepath (str): Path to the JSON file containing best posting times per day.
+
+    Returns:
+        dict: A dictionary with subreddits as keys and weekly calendar data as values.
+              Each day includes: best_hour, engagement_score, avg_upvotes, avg_comments.
+    """
+    days_of_week = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
+
+    with open(filepath, "r") as file:
+        best_times_data = json.load(file)
+
+    weekly_calendar_dict = {}
+
+    for subreddit in subreddits:
+        if subreddit not in best_times_data:
+            continue
+
+        data = best_times_data[subreddit]
+        best_overall_day = data.get("best_overall_day", "Monday")
+        overall_avg_upvotes = data.get("average_engagement", {}).get("upvotes", 0)
+        overall_avg_comments = data.get("average_engagement", {}).get("comments", 0)
+        weekly_schedule = data.get("weekly_schedule", {})
+
+        calendar = []
+
+        for day in days_of_week:
+            day_data = weekly_schedule.get(day, {})
+
+            best_hour = day_data.get("best_hour")
+            avg_upvotes = day_data.get("avg_upvotes", 0)
+            avg_comments = day_data.get("avg_comments", 0)
+            engagement_score = day_data.get("engagement_score", 0)
+
+            # Normalize engagement score to 0-1 range for color coding
+            # Find the max engagement score across all days to normalize
+            max_engagement = max(
+                [d.get("engagement_score", 0) for d in weekly_schedule.values()],
+                default=1,
+            )
+            normalized_score = (
+                engagement_score / max_engagement if max_engagement > 0 else 0
+            )
+
+            calendar.append(
+                {
+                    "day": day,
+                    "dayIndex": days_of_week.index(day),
+                    "engagementScore": round(normalized_score, 2),
+                    "isBestDay": day == best_overall_day,
+                    "bestHour": best_hour,
+                    "avgUpvotes": avg_upvotes,
+                    "avgComments": avg_comments,
+                    "rawEngagementScore": engagement_score,
+                }
+            )
+
+        weekly_calendar_dict[subreddit] = {
+            "calendar": calendar,
+            "bestDay": best_overall_day,
+            "averageEngagement": {
+                "upvotes": overall_avg_upvotes,
+                "comments": overall_avg_comments,
+            },
+        }
+
+    return weekly_calendar_dict
+
+
 def convert_to_uuids(id: str) -> str:
     """
     Convert a string ID to a UUID.
