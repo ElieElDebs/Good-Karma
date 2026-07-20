@@ -1,11 +1,11 @@
 import os
 
 import yaml
-from dotenv import load_dotenv
 
 # Init Qdrant
 from App.Database.qdrant import create_collection, initialize_model, initialize_qdrant
 from App.Scripts.post_fetching import call_fetching_pipeline, init_reddit_fetcher
+from dotenv import load_dotenv
 
 # Load .env file for environment variables
 load_dotenv("Configuration/.env")
@@ -30,11 +30,7 @@ if workflow_config.get("fetch_reddit_posts", {}).get("enabled", False):
     print("Starting subreddit post fetching and embedding addition...")
 
     # Initialize Reddit Fetcher
-    FETCHER = init_reddit_fetcher(
-        reddit_id=os.getenv("client_id"),
-        reddit_secret=os.getenv("client_secret"),
-        reddit_user_agent=os.getenv("user_agent"),
-    )
+    FETCHER = init_reddit_fetcher()
 
     # Call Fetching Pipeline
     treshold_configuration = workflow_config["fetch_reddit_posts"]["subreddits"]

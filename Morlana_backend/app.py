@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 print("Loading environment variables...")
@@ -7,11 +8,10 @@ loaded = load_dotenv("./Configuration/.env")
 if loaded == False:
     print("ERROR : Environnement variables has not been loaded succesffuly ! ")
 
-from fastapi import FastAPI
-
 import App.Database.qdrant as qdrant
 from App.Utils.llm import init_client
-from Routes import search, subreddits, post
+from fastapi import FastAPI
+from Routes import post, search, subreddits
 
 print("Initializing Qdrant and Model...")
 qdrant.initialize_qdrant(

@@ -1,6 +1,6 @@
-from openai import OpenAI
 import os
 
+from openai import OpenAI
 
 ENDPOINT = os.environ["AZURE_FOUNDRY_ENDPOINTS"]
 KEY = os.environ["AZURE_FOUNDRY_API_KEY"]

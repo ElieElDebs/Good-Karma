@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Security
-
 from App.Middleware.subreddits import get_subreddits_names
 from App.Utils.security import get_api_key
+from fastapi import APIRouter, Security
 
 router = APIRouter()
 

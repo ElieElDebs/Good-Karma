@@ -2,11 +2,10 @@ import os
 
 import numpy as np
 import pandas as pd
-from fastapi import APIRouter, Query, Security
-
 from App.Middleware.search import calculcate_posts_kpi_new
 from App.Utils.security import get_api_key
 from App.Utils.utils import get_best_times_to_post, get_weekly_posting_calendar
+from fastapi import APIRouter, Query, Security
 
 router = APIRouter()
 

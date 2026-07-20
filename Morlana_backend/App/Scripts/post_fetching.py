@@ -3,26 +3,20 @@ This script handles posts fetching from Reddit and adding their embeddings to th
 """
 
 import os
+import random
+import time
 
 import pandas as pd
-
 from App.Database.qdrant import add_embeddings
-from App.Utils.Reddit import RedditFetcher
+from App.Utils.Reddit import RedditScrapper
 from App.Utils.utils import convert_to_uuids, preprocess_text
 
 FETCHER = None
 
 
-def init_reddit_fetcher(
-    reddit_id: str, reddit_secret: str, reddit_user_agent: str
-) -> RedditFetcher:
+def init_reddit_fetcher() -> RedditScrapper:
     """
     Initializes the Reddit fetcher.
-
-    Args:
-        reddit_id (str): Reddit application ID.
-        reddit_secret (str): Reddit application secret.
-        reddit_user_agent (str): User agent for Reddit API.
 
     Returns:
         RedditFetcher: An instance of RedditFetcher.
@@ -31,7 +25,7 @@ def init_reddit_fetcher(
     global FETCHER
 
     if FETCHER is None:
-        FETCHER = RedditFetcher(reddit_id, reddit_secret, reddit_user_agent)
+        FETCHER = RedditScrapper()
 
     return FETCHER
 
@@ -180,13 +174,21 @@ def fetch_top_posts(threshold_configuration: list[dict] = None) -> pd.DataFrame:
         min_upvotes: int = config.get(subreddit_name, {}).get("min_upvotes", 1000)
         min_comments: int = config.get(subreddit_name, {}).get("min_comments", 1000)
 
+        time_to_wait:int = random.randint(40, 90)
+        print (f"Waiting {time_to_wait} seconds ....")
+        time.sleep(time_to_wait)
+        print ("Successfully Waited, proceeding")
+
         posts = FETCHER.fetch_top_posts(
             subreddit=subreddit_name,
             number_of_upvotes=min_upvotes,
             number_comment_threshold=min_comments,
         )
 
-        all_posts.extend(posts)
+        if len(posts) > 0:
+            print("Adding Post in all post")
+            all_posts.extend(posts)
+
 
     return pd.DataFrame(all_posts)
 
@@ -390,21 +392,6 @@ def call_fetching_pipeline(treshold_configuration: dict, collection_name: str) -
     print("Starting fetching pipeline...")
     posts_df = fetch_top_posts(treshold_configuration)
     print(f"Fetched {len(posts_df)} posts.")
-
-    print("Fetching Hot posts...")
-    hot_posts_df = fetch_hot_posts(treshold_configuration)
-    print(f"Fetched {len(hot_posts_df)} hot posts.")
-
-    print("Fetching Rising posts...")
-    rising_posts_df = fetch_rising_posts(treshold_configuration)
-    print(f"Fetched {len(rising_posts_df)} rising posts.")
-
-    posts_df = (
-        pd.concat([posts_df, hot_posts_df, rising_posts_df])
-        .drop_duplicates(subset=["id"])
-        .reset_index(drop=True)
-    )
-    print(f"Total unique posts after combining: {len(posts_df)}")
 
     print("Calculating best date to post...")
     best_times = calculate_best_date_to_post(posts_df)

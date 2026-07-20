@@ -1,15 +1,10 @@
 import os
 
-import pandas as pd
-from qdrant_client.http.models import FieldCondition, Filter, MatchValue
-
 import App.Database.qdrant as qdrant
-from App.Utils.kpi import (
-    calculate_body_kpi,
-    calculate_GES_new,
-    calculate_titles_kpi,
-)
+import pandas as pd
+from App.Utils.kpi import calculate_body_kpi, calculate_GES_new, calculate_titles_kpi
 from App.Utils.utils import preprocess_text
+from qdrant_client.http.models import FieldCondition, Filter, MatchValue
 
 
 def _search_similar_posts_new(

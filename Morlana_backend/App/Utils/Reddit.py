@@ -1,6 +1,147 @@
+import random
 import time
 
 import praw
+import requests
+
+USER_AGENTS: list[str] = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0",
+    "Mozilla/5.0 (X11; Linux i686; rv:126.0) Gecko/20100101 Firefox/126.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 14; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+]
+
+
+REDDIT_FETCH_URL = """https://old.reddit.com/r/{subreddit}/top/.json?t={frequency}"""
+
+
+class RedditScrapper:
+
+    def __init__(self, user_agents: list[str] = USER_AGENTS):
+        """
+        Initialize Reddit Scrapper.
+
+        Args:
+            user_agents (List str): List of User agent  for Reddit scrapper call.
+            time_range (tuple int int): Time range used for random fetch scrapping.
+
+        """
+
+        # PUBLIC
+        self.user_agents: list[str] = user_agents
+
+    @staticmethod
+    def _random_user_agent():
+        """
+        Choose random user agent
+        """
+
+        max_index: int = len(USER_AGENTS) - 1
+        chose_option: int = random.randint(0, max_index)
+
+        return USER_AGENTS[chose_option]
+
+    def fetch_top_posts(
+        self,
+        subreddit: str,
+        number_of_upvotes: int,
+        number_comment_threshold: int = None,
+    ) -> list[dict[str, any]]:
+        """
+        Fetch top posts from a subreddit based on upvotes and comment count.
+
+        Args:
+            subreddit (str): Name of the subreddit to fetch posts from.
+            number_of_upvotes (int): Minimum number of upvotes a post must have to be included.
+            number_comment_threshold (int): Minimum number of comments a post must have to be included.
+
+        Returns:
+            list[dict[str, any]]: List of dictionaries containing post data.
+
+        Raises:
+            AssertionError: If number_of_upvotes or number_comment_threshold are negative.
+
+        Post Structure:
+            {
+                'text': str,
+                'title': str,
+                'url': str,
+                'author': str,
+                'is_text': bool,
+                'category': str,
+                'is_18plus': bool,
+                'subreddit': str,
+                'nb_upvote': int,
+                'nb_downvote': int,
+                'nb_comment': int,
+                'date': float,
+                "type" : "successful"
+            }
+        """
+
+        url: str = REDDIT_FETCH_URL.format(subreddit=subreddit, frequency="week")
+
+        try:
+            user_agent: str = self._random_user_agent()
+            headers: dict[str, str] = {
+                "User-Agent": user_agent,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+            }
+
+            with requests.Session() as session:
+                session.headers.update(headers)
+                # Warm up: grab real cookies from the HTML page first, like a browser would,
+                # instead of hitting .json cold with no session state.
+                session.get(f"https://old.reddit.com/r/{subreddit}/", timeout=10)
+
+                response = session.get(url, timeout=10)
+                response.raise_for_status()
+                data = response.json()
+
+            top_posts = data["data"]["children"]
+
+        except Exception as e:
+            print(f"There was an error here : {e}")
+            top_posts = []
+
+        # Filter posts based on upvotes and comment count
+        filtered_posts = []
+
+        for post in top_posts:
+
+            post_data = post["data"]
+
+            if post_data["ups"] >= number_of_upvotes:
+                if (
+                    number_comment_threshold is None
+                    or post_data["num_comments"] >= number_comment_threshold
+                ):
+                    filtered_posts.append(
+                        {
+                            "id": post_data["id"],
+                            "text": post_data.get("selftext", ""),
+                            "title": post_data["title"],
+                            "url": post_data["url"],
+                            "author": post_data["author"],
+                            "is_text": post_data["is_self"],
+                            "category": "Top",
+                            "is_18plus": post_data["over_18"],
+                            "subreddit": subreddit,
+                            "nb_upvote": post_data["ups"],
+                            "nb_downvote": post_data["downs"],
+                            "nb_comment": post_data["num_comments"],
+                            "date": post_data["created_utc"],
+                            "type": "successful",
+                        }
+                    )
+
+        return filtered_posts
 
 
 class RedditFetcher:

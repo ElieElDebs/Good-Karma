@@ -7,11 +7,10 @@ import re
 from collections import Counter
 
 import pandas as pd
-from nltk.corpus import stopwords
-from textblob import TextBlob
-
 from App.Utils.GlobalEngagementScore import DynamicGESCalculator
 from App.Utils.GlobalEngagementScoreNew import GlobalEngagementScoreNew
+from nltk.corpus import stopwords
+from textblob import TextBlob
 
 
 def is_there_link_in_text(text: str) -> bool:

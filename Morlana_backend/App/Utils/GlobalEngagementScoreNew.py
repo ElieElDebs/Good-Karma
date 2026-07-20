@@ -3,8 +3,9 @@ This class contains all the new logics to calculate de Global Engagement Score
 based on the new criteria established in 2026.
 """
 
-import numpy as np
 import math
+
+import numpy as np
 
 
 class GlobalEngagementScoreNew:
