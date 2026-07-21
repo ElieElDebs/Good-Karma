@@ -92,15 +92,32 @@ class RedditScrapper:
                 "User-Agent": user_agent,
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.5",
+                "Upgrade-Insecure-Requests": "1",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+                "Sec-Fetch-User": "?1",
             }
 
             with requests.Session() as session:
                 session.headers.update(headers)
+
                 # Warm up: grab real cookies from the HTML page first, like a browser would,
                 # instead of hitting .json cold with no session state.
-                session.get(f"https://old.reddit.com/r/{subreddit}/", timeout=10)
+                page_url = f"https://old.reddit.com/r/{subreddit}/"
+                session.get(page_url, timeout=10)
+                time.sleep(random.uniform(1, 6))
 
-                response = session.get(url, timeout=10)
+                json_headers = {
+                    "Accept": "application/json",
+                    "Referer": page_url,
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-origin",
+                    "X-Requested-With": "XMLHttpRequest",
+                }
+
+                response = session.get(url, headers=json_headers, timeout=10)
                 response.raise_for_status()
                 data = response.json()
 
